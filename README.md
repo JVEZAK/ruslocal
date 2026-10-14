@@ -1,4 +1,4 @@
-# RunsLocal (v1.4)
+# RunsLocal (v1.5)
 
 "Can my PC run this AI model?" Pick a GPU or Mac and see which open models fit, at what quantization, and how fast.
 
