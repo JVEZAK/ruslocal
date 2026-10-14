@@ -1,0 +1,8 @@
+{
+  "name": "runslocal",
+  "version": "1.4.0",
+  "private": true,
+  "description": "RunsLocal: can my PC run this AI model?",
+  "scripts": { "build": "node build.js" },
+  "engines": { "node": ">=18" }
+}

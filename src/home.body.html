@@ -1,0 +1,106 @@
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Runs<b>Local</b></div>
+    <span class="ver">{{VERSION}} · data {{DATA_DATE}}</span>
+  </header>
+
+  <h1>Can my PC run this AI model?</h1>
+  <p class="lede">Pick your graphics card or Mac. See which open models fit in your memory, at what quantization, and about how many tokens per second you'll get.</p>
+
+  <div class="rig" role="group" aria-label="Your hardware">
+    <div class="gpu"><label for="hw">Graphics card or chip</label><select id="hw"></select></div>
+    <div><label for="ram">System RAM (GB)</label><input id="ram" type="number" min="4" max="1024" step="4" value="32"></div>
+    <div><label for="ramtype">RAM type</label><select id="ramtype"><option value="45">DDR4</option><option value="70" selected>DDR5</option></select></div>
+    <div><label for="ctx">Context length</label><select id="ctx"><option value="4096">4K tokens</option><option value="8192" selected>8K tokens</option><option value="32768">32K tokens</option><option value="131072">128K tokens</option></select></div>
+    <div class="spec" id="spec"></div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+  <div class="ledger" id="ledger" aria-live="polite"></div>
+
+  <div class="sponsor" id="sponsor"><span>Model too big for your card? A sponsor slot for cloud-GPU rentals goes here.</span><span>Sponsor RunsLocal</span></div>
+
+  <div class="news">
+    <div><h2>New models your GPU can run</h2><p>One short email when a new open model drops, with what it needs and who can run it.</p></div>
+    <form id="nl" novalidate><input id="email" type="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address"><button type="submit">Notify me</button></form>
+    <div class="msg" id="nlmsg" hidden></div>
+  </div>
+
+  <!--BROWSE-->
+
+  <section class="notes">
+    <div>
+      <h2>How the estimate works</h2>
+      <p>Memory needed = model weights + context cache + about 0.5 GB of runtime overhead.</p>
+      <p>Weights = parameters × bits per weight ÷ 8. A 27B model at Q4_K_M (≈4.85 bits) is about 16.4 GB.</p>
+      <p>Speed comes from memory bandwidth. Each new token reads every active weight once, so tokens/sec ≈ usable bandwidth ÷ active weight size. Mixture-of-experts (MoE) models only read their active experts, which is why a 35B-A3B model runs like a 3B one.</p>
+      <p>When a model doesn't fit, llama.cpp and Ollama can keep part of it in system RAM. The part in RAM runs at RAM speed, so we blend the two. On Macs and other unified-memory machines, about 72% of RAM is usable for the model.</p>
+      <table class="qt" aria-label="Quantization levels">
+        <tr><th>Quant</th><th>Bits</th><th>Quality</th></tr>
+        <tr><td>Q8_0</td><td>8.5</td><td>Near lossless</td></tr>
+        <tr><td>Q6_K</td><td>6.6</td><td>Excellent</td></tr>
+        <tr><td>Q5_K_M</td><td>5.7</td><td>Very good</td></tr>
+        <tr><td>Q4_K_M</td><td>4.85</td><td>Good, the usual pick</td></tr>
+        <tr><td>Q3_K_M</td><td>3.9</td><td>Noticeable loss</td></tr>
+        <tr><td>IQ2_M</td><td>2.7</td><td>Big loss, last resort</td></tr>
+      </table>
+      <p>These are estimates. Real numbers vary with the runtime, drivers and settings, usually within about 20%.</p>
+    </div>
+    <div>
+      <h2>Common questions</h2>
+      <h3>How much VRAM do I need for a local LLM?</h3>
+      <p>At Q4_K_M, plan on about 0.6 GB per billion parameters plus context. A 9B model fits in 8 GB, 27B–31B models need about 20 GB, and a 70B model needs about 45 GB.</p>
+      <h3>What's the best model for a 16 GB card?</h3>
+      <p>Qwen3.6 35B-A3B and Gemma 4 26B A4B run well with light offload because they're MoE. Gemma 4 12B fits fully at Q8.</p>
+      <h3>What's the best model for 24 GB (RTX 3090 / 4090)?</h3>
+      <p>Qwen3.8 27B, Gemma 4 31B and Qwen3.6 27B at Q4_K_M, with room for 8K–32K of context.</p>
+      <h3>Can I run a model bigger than my VRAM?</h3>
+      <p>Yes, with offload to system RAM, but it slows down. MoE models handle offload far better than dense models.</p>
+      <h3>Does AMD or Intel work?</h3>
+      <p>Yes. llama.cpp supports AMD through ROCm and Vulkan, and Intel Arc through Vulkan and SYCL. Speeds land a bit below NVIDIA at the same bandwidth.</p>
+    </div>
+  </section>
+
+  <footer><span>RunsLocal {{VERSION}} · Model list updated {{DATA_DATE}}</span><span>Estimates only. Not affiliated with any GPU or model maker.</span></footer>
+</div>
+
+<script>/*__ENGINE__*/</script>
+<script>
+const $=s=>document.querySelector(s);
+const hwSel=$("#hw");
+let idx=0;
+RL.HW.forEach(([grp,list])=>{const og=document.createElement("optgroup");og.label=grp;list.forEach(h=>{const o=document.createElement("option");o.value=idx++;o.textContent=h[0]+(h[3]==="d"?` · ${h[1]} GB`:h[3]==="c"?" (uses system RAM)":"");og.appendChild(o)});hwSel.appendChild(og)});
+let filter="all";
+function store(k,v){try{localStorage.setItem("rl_"+k,v)}catch(e){}}
+function load(k){try{return localStorage.getItem("rl_"+k)}catch(e){return null}}
+const defIdx=RL.flat.findIndex(h=>h[0]==="RTX 5070 Ti");
+const saved=load("hw2"); hwSel.value=(saved!==null&&RL.flat[saved])?saved:defIdx;
+["ram","ramtype","ctx"].forEach(id=>{const v=load(id);if(v!==null)$("#"+id).value=v});
+
+function render(){
+  const hw=RL.flat[hwSel.value]; const ram=+$("#ram").value||0; const ramBw=+$("#ramtype").value; const ctx=+$("#ctx").value;
+  store("hw2",hwSel.value); ["ram","ramtype","ctx"].forEach(id=>store(id,$("#"+id).value));
+  $("#ram").disabled = hw[3]==="u";
+  const usable = hw[3]==="d"? (hw[1]-0.6).toFixed(1)+" GB VRAM usable" : hw[3]==="u"? (hw[1]*0.72).toFixed(0)+" GB of "+hw[1]+" GB unified usable" : Math.max(0,(ram-6)*0.9).toFixed(0)+" GB RAM usable";
+  $("#spec").innerHTML=`<span><strong>${hw[0]}</strong></span><span>${usable}</span><span>${hw[3]==="c"?ramBw:hw[2]} GB/s bandwidth</span><span>${ctx/1024}K context</span>`;
+  const rows=RL.rank(hw,ram,ramBw,ctx);
+  const counts={gpu:0,off:0,no:0}; rows.forEach(({r})=>{const k=["gpu","cpu","squeeze"].includes(r.tier)?"gpu":r.tier; counts[k]++});
+  $("#summary").innerHTML=[["all","All models",rows.length,""],["gpu","Runs",counts.gpu,"gpu"],["off","Needs offload",counts.off,"off"],["no","Too big",counts.no,"no"]]
+    .map(([k,l,n,c])=>`<button class="chip ${c}" data-f="${k}" data-on="${filter===k?1:0}">${l}<span class="n">${n}</span></button>`).join("");
+  const vis=rows.filter(({r})=>filter==="all"||(filter==="gpu"?["gpu","cpu","squeeze"].includes(r.tier):r.tier===filter));
+  $("#ledger").innerHTML=vis.length?vis.map(({m,r})=>{
+    const col=r.tier==="gpu"?"var(--ok)":r.tier==="no"?"var(--bad)":"var(--warn)";
+    const fits=r.cap>=r.need; const fillW=fits? r.need/r.cap*100 : 100; const capPct=fits?100:r.cap/r.need*100;
+    const link="model/"+RL.slug(m[0])+".html";
+    return `<div class="row"><div><div class="name"><a href="${link}" style="color:inherit;text-decoration:none">${m[0]}</a></div><div class="meta"><span class="tag ${RL.TIER[r.tier][1]}">${RL.TIER[r.tier][0]}</span>${m[4]} · ${m[5]}</div></div>
+    <div class="fit"><div class="bar" aria-hidden="true"><i style="width:${fillW.toFixed(1)}%;background:${col}"></i>${!fits&&r.cap>0?`<span class="cap" style="left:${capPct.toFixed(1)}%"></span>`:""}</div>
+    <div class="barlbl"><span>${r.q} · needs ${r.need.toFixed(1)} GB</span><span>${r.tier==="off"?"GPU holds "+r.cap.toFixed(1)+" GB":"have "+r.cap.toFixed(1)+" GB"}</span></div></div>
+    <div class="speed"><span class="v">${RL.fmtTps(r.tps)}</span><span class="u">${r.tps?"tok/s · "+RL.speedWord(r.tps):"won't load"}</span></div></div>`}).join("")
+    :`<div class="empty">No models in this group for this setup.</div>`;
+}
+document.addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){filter=b.dataset.f;render()}});
+["hw","ram","ramtype","ctx"].forEach(id=>$("#"+id).addEventListener("input",render));
+$("#nl").addEventListener("submit",e=>{e.preventDefault();const v=$("#email").value.trim();const m=$("#nlmsg");m.hidden=false;
+  m.textContent=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?"Thanks. Sign-ups open when the newsletter launches, which is very soon.":"That email doesn't look right. Check it and try again."});
+render();
+</script>
