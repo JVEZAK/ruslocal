@@ -1,11 +1,11 @@
-// RunsLocal static site builder — v1.5
+// RunsLocal static site builder — v1.6
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
 const path = require("path");
 const RL = require("./src/engine.js");
 
-const SITE = process.env.SITE || "https://runslocal.netlify.app";
+const SITE = process.env.SITE || "https://runslocalai.com";
 const BRAND = "RunsLocal";
 const CSS = fs.readFileSync("src/style.css", "utf8");
 const ENGINE = fs.readFileSync("src/engine.js", "utf8");
