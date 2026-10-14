@@ -90,3 +90,8 @@ table.ref td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;whi
 .links a{text-decoration:none}
 .links a:hover{text-decoration:underline}
 h2.sec{font-family:var(--f-display);font-size:1.3rem;margin:30px 0 6px}
+/* v1.8: top navigation and tools directory */
+.topnav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:.88rem}
+.topnav a{color:var(--muted);text-decoration:none;font-weight:500}
+.topnav a:hover{color:var(--accent)}
+table.ref tbody th{font-size:.8rem;color:var(--muted);text-transform:none;letter-spacing:0;width:30%;font-weight:600}

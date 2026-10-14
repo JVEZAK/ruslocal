@@ -1,4 +1,4 @@
-# RunsLocal v1.7: Netlify builds the static site from source
+# RunsLocal v1.8: Netlify builds the static site from source
 [build]
   command = "node build.js"
   publish = "dist"

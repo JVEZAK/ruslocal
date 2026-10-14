@@ -1,9 +1,10 @@
-// RunsLocal static site builder — v1.7
+// RunsLocal static site builder — v1.8
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
 const path = require("path");
 const RL = require("./src/engine.js");
+const { CATEGORIES, TOOLS } = require("./src/tools.js");
 
 const SITE = process.env.SITE || "https://runslocalai.com";
 const BRAND = "RunsLocal";
@@ -34,7 +35,7 @@ const fullDoc = (h, body) => `<!doctype html>
 ${h}
 </head><body>${body}</body></html>
 `;
-const topbar = (rootRel) => `<header class="top"><a class="brand" href="${rootRel}index.html" style="text-decoration:none;color:inherit">Runs<b>Local</b></a><span class="ver">${RL.VERSION} · data ${RL.DATA_DATE}</span></header>`;
+const topbar = (rootRel) => `<header class="top"><a class="brand" href="${rootRel}index.html" style="text-decoration:none;color:inherit">Runs<b>Local</b></a><span class="topnav"><a href="${rootRel}index.html">GPU checker</a><a href="${rootRel}tools/index.html">Local AI tools</a><span class="ver">${RL.VERSION} · data ${RL.DATA_DATE}</span></span></header>`;
 const footer = `<footer><span>${BRAND} ${RL.VERSION} · Model list updated ${RL.DATA_DATE}</span><span>Estimates only. Not affiliated with any GPU or model maker.</span></footer>`;
 const faq = qa => ({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: qa.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) });
 
@@ -62,6 +63,8 @@ function gpuPage(h) {
 ${rows.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td><span class="tag ${RL.TIER[r.tier][1]}">${RL.TIER[r.tier][0]}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${r.tps ? RL.fmtTps(r.tps) + " tok/s" : "—"}</td></tr>`).join("\n")}
 </tbody></table></div>
 <p class="meta">Specs used: ${memLabel(h)}, ${h[2]} GB/s memory bandwidth. Speeds are estimates for generating text with llama.cpp-style runtimes; real numbers usually land within about 20%.</p>
+<h2 class="sec">Apps that support the ${esc(h[0])}</h2>
+<p class="links">${TOOLS.filter(t => !t.via && t.gpu.includes(vendorOf(h))).map(t => `<a href="../${toolFile(t)}">${esc(t.name)}</a>`).join("")}</p>
 ${footer}</div>`;
   const desc = answer.slice(0, 300);
   return fullDoc(head({ title, desc, url, ld: faq([[`What AI models can the ${h[0]} run?`, answer]]) }), body);
@@ -104,11 +107,77 @@ ${footer}</div>`;
   return fullDoc(head({ title, desc: answer.slice(0, 300), url, ld: faq([[`What GPU do I need to run ${m[0]}?`, answer]]) }), body);
 }
 
+
+// ---------- Local AI tools directory ----------
+const VENDORS = [["N", "NVIDIA"], ["A", "AMD"], ["I", "Intel Arc"], ["M", "Apple Silicon"], ["C", "CPU only"]];
+const OSN = { W: "Windows", M: "macOS", L: "Linux" };
+const toolFile = t => `tools/${RL.slug(t.name)}.html`;
+const vendorOf = h => { const g = RL.HW.find(([, list]) => list.includes(h))[0]; return g.startsWith("NVIDIA") ? "N" : g.startsWith("AMD") ? "A" : g.startsWith("Intel") ? "I" : g.startsWith("Apple") ? "M" : "C"; };
+const osText = t => [...t.os].map(c => OSN[c]).join(", ");
+const gpuText = t => t.via ? "Uses your engine's GPU support" : VENDORS.filter(([k]) => t.gpu.includes(k)).map(([, n]) => n).join(", ");
+const listJoin = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+function toolAnswer(t) {
+  let a = `${t.name} is a ${t.open ? "free, open-source" : "free (not open-source)"} ${({ apps: "desktop app", engines: "engine", ui: "chat interface", coding: "coding tool" })[t.cat]} ${t.via ? "that works with AI models running on your own hardware" : "for running AI models on your own hardware"}. It runs on ${listJoin([...t.os].map(c => OSN[c]))}.`;
+  if (t.via) a += ` It doesn't run models itself; it connects to an engine such as Ollama or LM Studio, which uses your GPU.`;
+  else a += ` It supports ${listJoin(VENDORS.filter(([k]) => t.gpu.includes(k) && k !== "C").map(([, n]) => n + " GPUs"))}${t.gpu.includes("C") ? ", and can also run on the CPU alone" : ""}.`;
+  return a + ` Best for: ${t.best.charAt(0).toLowerCase() + t.best.slice(1)}.`;
+}
+function toolsTable(list, rel) {
+  return `<div class="tablewrap"><table class="ref"><thead><tr><th>Tool</th><th>Best for</th><th>GPUs</th><th>Runs on</th><th>Level</th></tr></thead><tbody>
+${list.map(t => `<tr data-gpu="${t.via ? "NAIMC" : t.gpu}"><td><a href="${rel}${toolFile(t)}">${esc(t.name)}</a><br><span class="meta">${t.open ? "Open source" : "Free, closed source"}</span></td><td>${esc(t.best)}</td><td>${esc(gpuText(t))}</td><td>${esc(osText(t))}</td><td>${esc(t.level)}</td></tr>`).join("\n")}
+</tbody></table></div>`;
+}
+const toolsFaq = [
+  ["What is the easiest way to run an AI model locally?", "For most people, a desktop app like LM Studio or Jan, or Ollama if you are comfortable with one command in a terminal. All three are free and run on Windows, macOS and Linux."],
+  ["What is the best local AI tool for AMD GPUs?", "LM Studio, Jan, llama.cpp, Ollama and LocalAI all support AMD GPUs. On Linux servers, vLLM and SGLang also support AMD."],
+  ["What is the fastest way to run models on a Mac?", "MLX LM, Apple's framework for M-series chips, is usually fastest. LM Studio can use MLX too, and Ollama and llama.cpp use Apple's Metal GPU support."],
+  ["Can I use a local model for coding?", "Yes. Continue, Cline, Aider and OpenCode can all connect to a local engine like Ollama or LM Studio instead of a paid API. Agent-style coding works best with a capable model, roughly 24B parameters or more."]
+];
+function toolsIndex() {
+  const url = `${SITE}/tools/`;
+  const body = `<div class="wrap">${topbar("../")}
+<h1>Local AI tools</h1>
+<p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
+<div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
+${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
+<div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
+<section class="notes"><div><h2>Common questions</h2>${toolsFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join("")}</div></section>
+${footer}</div>
+<script>document.getElementById("vf").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const v=b.dataset.v;document.querySelectorAll("#vf .chip").forEach(c=>c.dataset.on=c===b?"1":"0");document.querySelectorAll("tr[data-gpu]").forEach(r=>{r.hidden=v!=="all"&&!r.dataset.gpu.includes(v)})});</script>`;
+  return fullDoc(head({ title: `Local AI tools: apps to run AI models on your PC or Mac | ${BRAND}`, desc: "Free apps for running AI models locally (Ollama, LM Studio, Jan, llama.cpp, vLLM, MLX and more), sorted by what they do and which GPUs they support.", url, ld: faq(toolsFaq) }), body);
+}
+function toolPage(t) {
+  const answer = toolAnswer(t);
+  const url = `${SITE}/${clean(toolFile(t))}`;
+  const same = TOOLS.filter(x => x.cat === t.cat && x !== t);
+  const hw = t.via ? [] : gpus.filter(h => t.gpu.includes(vendorOf(h)));
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / ${esc(t.name)}</p>
+<h1>${esc(t.name)}: what it is and what it runs on</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="${esc(t.url)}" rel="noopener">Visit ${esc(t.name)}</a>
+<div class="tablewrap"><table class="ref"><tbody>
+<tr><th>Type</th><td>${esc(CATEGORIES.find(c => c[0] === t.cat)[1])}</td></tr>
+<tr><th>Open source</th><td>${t.open ? "Yes" : "No (free to use)"}</td></tr>
+<tr><th>Operating systems</th><td>${esc(osText(t))}</td></tr>
+<tr><th>GPU support</th><td>${esc(gpuText(t))}</td></tr>
+<tr><th>Skill level</th><td>${esc(t.level)}</td></tr>
+<tr><th>Notes</th><td>${esc(t.note)}</td></tr>
+</tbody></table></div>
+<h2 class="sec">Which models can you run with ${esc(t.name)}?</h2>
+<p class="meta">That depends on your graphics card's memory, not the app. ${hw.length ? "Pick your hardware:" : `<a href="../index.html">Check your GPU</a> to see which models fit.`}</p>
+${hw.length ? `<p class="links">${hw.map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</p>` : ""}
+${same.length ? `<h2 class="sec">Similar tools</h2><p class="links">${same.map(x => `<a href="${RL.slug(x.name)}.html">${esc(x.name)}</a>`).join("")}</p>` : ""}
+${footer}</div>`;
+  return fullDoc(head({ title: `${t.name}: local AI ${({ apps: "app", engines: "engine", ui: "interface", coding: "coding tool" })[t.cat]}, GPU support and requirements | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is ${t.name} and which GPUs does it support?`, answer]]) }), body);
+}
+
 // ---------- Home / tool ----------
 function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2>What can my GPU run?</h2>${byGroup}</section>
-<section class="browse"><h2>What do I need to run a model?</h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>`;
+<section class="browse"><h2>What do I need to run a model?</h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
+<section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
 function homeBody() {
   const tool = fs.readFileSync("src/home.body.html", "utf8");
@@ -137,6 +206,8 @@ function llmsTxt() {
   });
   lines.push("", "## Models");
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
+  lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
+  TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
 
@@ -148,10 +219,12 @@ write("dist", "index.html", fullDoc(homeHead(), homeBody()));
 write("artifact", "index.html", homeHead() + "\n" + homeBody());
 gpus.forEach(h => { const f = gpuFile(h), html = gpuPage(h); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 RL.MODELS.forEach(m => { const f = modelFile(m), html = modelPage(m); write("dist", f, html); write("artifact", f, html); pages.push(f); });
+write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
+TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TOOLS.length + 1} tools pages for ${SITE}`);
