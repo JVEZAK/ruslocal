@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v1.8 · data Oct 14, 2026
+// v1.9 · data Oct 15, 2026
 (function (root) {
-  const VERSION = "v1.8";
-  const DATA_DATE = "Oct 14, 2026";
+  const VERSION = "v1.9";
+  const DATA_DATE = "Oct 15, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -41,6 +41,7 @@
     ["Qwen3.5 9B", 9.7, 9.7, 0.5, "general", "Good 8 GB pick"],
     ["Qwen3.5 122B-A10B", 122, 10, 0.8, "MoE", "Workstation / big Mac class"],
     ["Qwen3.8-Flash-Next", 176, 6, 0.6, "MoE", "125B + n-gram table, 6B active"],
+    ["Nemotron 3.5 Lightning 30B-A3B", 30, 3, 0.3, "MoE · agentic", "NVIDIA hybrid Mamba, ~3B active, 1M context"],
     ["gpt-oss-20b", 21, 3.6, 0.4, "MoE · reasoning", "OpenAI open-weight, Apache 2.0"],
     ["gpt-oss-120b", 117, 5.1, 0.6, "MoE · reasoning", "Needs ~64 GB+"],
     ["Phi-4 14B", 14.7, 14.7, 1.6, "reasoning", "Microsoft, 16K context"],
