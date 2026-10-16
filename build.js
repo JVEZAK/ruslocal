@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.0
+// RunsLocal static site builder — v2.1
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -23,6 +23,7 @@ const memLabel = h => h[3] === "u" ? `${h[1]} GB unified memory` : `${h[1]} GB o
 function head({ title, desc, url, ld }) {
   return `<title>${esc(title)}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${url}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary">
