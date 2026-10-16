@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v1.9
+// RunsLocal static site builder — v2.0
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -171,6 +171,7 @@ function toolsIndex() {
   const body = `<div class="wrap">${topbar("../")}
 <h1>Local AI tools</h1>
 <p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
+<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}</p>
 <div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
 ${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
 <div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
@@ -203,6 +204,34 @@ ${hw.length ? `<p class="links">${hw.map(h => `<a href="../${gpuFile(h)}">${esc(
 ${same.length ? `<h2 class="sec">Similar tools</h2><p class="links">${same.map(x => `<a href="${RL.slug(x.name)}.html">${esc(x.name)}</a>`).join("")}</p>` : ""}
 ${footer}</div>`;
   return fullDoc(head({ title: `${t.name}: local AI ${({ apps: "app", engines: "engine", ui: "interface", coding: "coding tool" })[t.cat]}, GPU support and requirements | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is ${t.name} and which GPUs does it support?`, answer]]) }), body);
+}
+
+// ---------- Best local AI apps by GPU brand (v2.0) ----------
+const VPAGES = [["N", "nvidia", "NVIDIA GPUs"], ["A", "amd", "AMD GPUs"], ["I", "intel-arc", "Intel Arc GPUs"], ["M", "mac", "Apple Silicon Macs"]];
+const vendorFile = v => `tools/for-${v[1]}.html`;
+function vendorPage(v) {
+  const [k, , label] = v;
+  const direct = TOOLS.filter(t => !t.via && t.gpu.includes(k));
+  const front = TOOLS.filter(t => t.via);
+  const easy = direct.filter(t => t.level === "Beginner");
+  const url = `${SITE}/${clean(vendorFile(v))}`;
+  let answer = `${direct.length} free local AI tools run models directly on ${label}: ${listJoin(direct.map(t => t.name))}.`;
+  if (easy.length) answer += ` The easiest to start with are ${listJoin(easy.map(t => t.name))}.`;
+  if (k === "M") answer += ` MLX LM is usually the fastest on M-series chips.`;
+  if (k === "A") answer += ` On Linux servers, vLLM and SGLang also support AMD.`;
+  answer += ` Chat interfaces and coding agents such as ${listJoin(front.slice(0, 3).map(t => t.name))} work on any GPU because they connect to one of these engines.`;
+  const hw = gpus.filter(h => vendorOf(h) === k);
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / For ${esc(label)}</p>
+<h1>Best local AI apps for ${esc(label)}</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which models your GPU can run</a>
+<h2 class="sec">Runs models on ${esc(label)}</h2>${toolsTable(direct, "../")}
+<h2 class="sec">Works with any engine above</h2>${toolsTable(front, "../")}
+${hw.length ? `<h2 class="sec">What can my ${esc(label.replace(/s$/, ""))} run?</h2><p class="links">${hw.map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</p>` : ""}
+<h2 class="sec">Other hardware</h2><p class="links">${VPAGES.filter(x => x !== v).map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}</p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local AI apps for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI app for ${label}?`, answer]]) }), body);
 }
 
 // ---------- Home / tool ----------
@@ -243,6 +272,7 @@ function llmsTxt() {
   lines.push("", "## Models");
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
   lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
+  VPAGES.forEach(v => lines.push(`- [Best local AI apps for ${v[2]}](${SITE}/${clean(vendorFile(v))})`));
   TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
@@ -258,10 +288,11 @@ RL.MODELS.forEach(m => { const f = modelFile(m), html = modelPage(m); write("dis
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
+VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TIERS.length} best-by-VRAM pages + ${TOOLS.length + 1} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);

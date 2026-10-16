@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v1.9 · data Oct 15, 2026
+// v2.0 · data Oct 16, 2026
 (function (root) {
-  const VERSION = "v1.9";
-  const DATA_DATE = "Oct 15, 2026";
+  const VERSION = "v2.0";
+  const DATA_DATE = "Oct 16, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -52,7 +52,9 @@
     ["Llama 3.3 70B", 70.6, 70.6, 2.6, "general", "Classic 70B"],
     ["Llama 4 Scout", 109, 17, 1.5, "MoE · vision", "17B active"],
     ["GLM-5.3-Flash", 320, 18, 1.5, "MoE · coding", "Strongest MIT-licensed mid model"],
-    ["DeepSeek V4.1-Flash", 552, 16, 0.6, "MoE · coding", "Frontier open weights, 1M context"]
+    ["DeepSeek V4.1-Flash", 552, 16, 0.6, "MoE · coding", "Frontier open weights, 1M context"],
+    ["Muse Spark Open 816B-A42B", 816, 42, 2.1, "MoE · vision", "Meta, Oct 2026; 42B active, 1M context"],
+    ["Mellum2.1 12B-A2.5B Thinking", 12, 2.5, 0.1, "MoE · coding", "JetBrains coding agent model, Apache 2.0"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
