@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.1
+// RunsLocal static site builder — v2.2
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");

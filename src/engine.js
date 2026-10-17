@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.1 · data Oct 16, 2026
+// v2.2 · data Oct 17, 2026
 (function (root) {
-  const VERSION = "v2.1";
-  const DATA_DATE = "Oct 16, 2026";
+  const VERSION = "v2.2";
+  const DATA_DATE = "Oct 17, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -22,6 +22,8 @@
     ["Intel", [["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
     ["Apple (unified memory)", [
       ["M3 Ultra 512GB", 512, 819, "u"], ["M3 Ultra 256GB", 256, 819, "u"], ["M3 Ultra 96GB", 96, 819, "u"],
+      ["M5 Max 128GB", 128, 614, "u"], ["M5 Max 64GB", 64, 614, "u"], ["M5 Max 36GB", 36, 460, "u"],
+      ["M5 Pro 64GB", 64, 307, "u"], ["M5 Pro 24GB", 24, 307, "u"],
       ["M4 Max 128GB", 128, 546, "u"], ["M4 Max 64GB", 64, 546, "u"], ["M4 Max 36GB", 36, 410, "u"],
       ["M4 Pro 48GB", 48, 273, "u"], ["M4 Pro 24GB", 24, 273, "u"],
       ["M5 32GB", 32, 153, "u"], ["M5 16GB", 16, 153, "u"], ["M4 32GB", 32, 120, "u"], ["M4 16GB", 16, 120, "u"]]],

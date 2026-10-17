@@ -6,3 +6,14 @@
 [build.environment]
   NODE_VERSION = "20"
   SITE = "https://runslocalai.com"
+
+# v2.2: crawlers keep asking for WordPress-style sitemap names; point them at the real one
+[[redirects]]
+  from = "/sitemap_index.xml"
+  to = "/sitemap.xml"
+  status = 301
+
+[[redirects]]
+  from = "/wp-sitemap.xml"
+  to = "/sitemap.xml"
+  status = 301
