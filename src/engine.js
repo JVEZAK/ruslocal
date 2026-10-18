@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.2 · data Oct 17, 2026
+// v2.3 · data Oct 18, 2026
 (function (root) {
-  const VERSION = "v2.2";
-  const DATA_DATE = "Oct 17, 2026";
+  const VERSION = "v2.3";
+  const DATA_DATE = "Oct 18, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -56,7 +56,9 @@
     ["GLM-5.3-Flash", 320, 18, 1.5, "MoE · coding", "Strongest MIT-licensed mid model"],
     ["DeepSeek V4.1-Flash", 552, 16, 0.6, "MoE · coding", "Frontier open weights, 1M context"],
     ["Muse Spark Open 816B-A42B", 816, 42, 2.1, "MoE · vision", "Meta, Oct 2026; 42B active, 1M context"],
-    ["Mellum2.1 12B-A2.5B Thinking", 12, 2.5, 0.1, "MoE · coding", "JetBrains coding agent model, Apache 2.0"]
+    ["Mellum2.1 12B-A2.5B Thinking", 12, 2.5, 0.1, "MoE · coding", "JetBrains coding agent model, Apache 2.0"],
+    ["LFM2.5 24B-A2B", 24, 2.45, 0.2, "MoE · agentic", "Liquid AI hybrid conv/attention, Oct 2026; 131K context"],
+    ["Reflection Beam 501B-A23B", 501, 23, 1.0, "MoE · coding", "Reflection AI, Oct 2026; Apache 2.0, agentic coding"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

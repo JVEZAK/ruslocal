@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.2
+// RunsLocal static site builder — v2.3
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -86,6 +86,8 @@ function modelPage(m) {
   else if (full.length) answer += ` It needs a large unified-memory machine such as the ${full[0].h[0]}, or a multi-GPU setup.`;
   else answer += ` It is too large for any single consumer card or Mac in our list at Q4; it needs a multi-GPU server.`;
   if (moe && off.length) answer += ` Because only ${m[2]}B parameters are active, it still runs usably with offload to system RAM on cards like the ${off[0].h[0]}.`;
+  // v2.3: internal links to the 4 models closest in total size
+  const similar = RL.MODELS.filter(x => x !== m).sort((a, b) => Math.abs(Math.log(a[1] / m[1])) - Math.abs(Math.log(b[1] / m[1]))).slice(0, 4);
   const title = `What GPU do I need to run ${m[0]}? | ${BRAND}`;
   const url = `${SITE}/${clean(modelFile(m))}`;
   const body = `<div class="wrap">${topbar("../")}
@@ -103,6 +105,8 @@ ${full.map(({ h, r }) => `<tr><td><a href="../${gpuFile(h)}">${esc(h[0])}</a></t
 </tbody></table></div>` : `<p class="meta">None of the single cards or machines in our list hold it at Q4_K_M or better.</p>`}
 ${off.length ? `<h2 class="sec">Runs with offload to system RAM (slower)</h2>
 <p class="links">${off.slice(0, 24).map(({ h, r }) => `<a href="../${gpuFile(h)}">${esc(h[0])}</a> <span class="meta">~${RL.fmtTps(r.tps)} tok/s</span>`).join(" · ")}</p>` : ""}
+<h2 class="sec">Similar-size models</h2><p class="links">${similar.map(x => `<a href="../${modelFile(x)}">${esc(x[0])}</a>`).join("")}</p>
+<h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}</p>
 <p class="meta">Assumes ${DEF.ram} GB of DDR5 system RAM for offload. Estimates only; real speeds usually land within about 20%.</p>
 ${footer}</div>`;
   return fullDoc(head({ title, desc: answer.slice(0, 300), url, ld: faq([[`What GPU do I need to run ${m[0]}?`, answer]]) }), body);
