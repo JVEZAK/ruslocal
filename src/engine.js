@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.3 · data Oct 18, 2026
+// v2.4 · data Oct 19, 2026
 (function (root) {
-  const VERSION = "v2.3";
-  const DATA_DATE = "Oct 18, 2026";
+  const VERSION = "v2.4";
+  const DATA_DATE = "Oct 19, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -14,7 +14,7 @@
       ["RTX 4060 Ti 8GB", 8, 288, "d"], ["RTX 4060", 8, 272, "d"],
       ["RTX 3090 Ti", 24, 1008, "d"], ["RTX 3090", 24, 936, "d"], ["RTX 3080 Ti", 12, 912, "d"], ["RTX 3080 12GB", 12, 912, "d"],
       ["RTX 3080 10GB", 10, 760, "d"], ["RTX 3070", 8, 448, "d"], ["RTX 3060 Ti", 8, 448, "d"], ["RTX 3060 12GB", 12, 360, "d"],
-      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["DGX Spark 128GB", 128, 273, "u"]]],
+      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
       ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
@@ -58,7 +58,10 @@
     ["Muse Spark Open 816B-A42B", 816, 42, 2.1, "MoE · vision", "Meta, Oct 2026; 42B active, 1M context"],
     ["Mellum2.1 12B-A2.5B Thinking", 12, 2.5, 0.1, "MoE · coding", "JetBrains coding agent model, Apache 2.0"],
     ["LFM2.5 24B-A2B", 24, 2.45, 0.2, "MoE · agentic", "Liquid AI hybrid conv/attention, Oct 2026; 131K context"],
-    ["Reflection Beam 501B-A23B", 501, 23, 1.0, "MoE · coding", "Reflection AI, Oct 2026; Apache 2.0, agentic coding"]
+    ["Reflection Beam 501B-A23B", 501, 23, 1.0, "MoE · coding", "Reflection AI, Oct 2026; Apache 2.0, agentic coding"],
+    ["Nemotron 3.5 Bolt 74B-A9B", 74, 9, 0.4, "MoE · vision", "NVIDIA hybrid Mamba, Oct 2026; official 2-bit build is ~22 GB"],
+    ["Nemotron 3.5 Super VL 120B-A12B", 120, 12, 0.6, "MoE · vision", "NVIDIA hybrid Mamba, Oct 2026; 1M context"],
+    ["Kolibri-1 78B-A3.5B", 78.1, 3.46, 0.3, "MoE", "Aleph Alpha, Oct 2026; Apache 2.0, mostly sliding-window attention"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

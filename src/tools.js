@@ -1,4 +1,4 @@
-// RunsLocal tools directory data — v2.3 · data Oct 18, 2026
+// RunsLocal tools directory data — v2.4 · data Oct 19, 2026
 // Apps for running AI models on your own hardware. Keep facts conservative and verifiable;
 // the CEO agent updates this list. gpu: N=NVIDIA, A=AMD, I=Intel Arc, M=Apple Silicon, C=CPU only.
 // os: W=Windows, M=macOS, L=Linux. via: "backend" means it uses another engine (e.g. Ollama) for the GPU work.
