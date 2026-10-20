@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.4 · data Oct 19, 2026
+// v2.5 · data Oct 20, 2026
 (function (root) {
-  const VERSION = "v2.4";
-  const DATA_DATE = "Oct 19, 2026";
+  const VERSION = "v2.5";
+  const DATA_DATE = "Oct 20, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -19,7 +19,7 @@
       ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
       ["Ryzen AI Max+ 395 128GB", 128, 256, "u"], ["Ryzen AI Max+ 395 64GB", 64, 256, "u"]]],
-    ["Intel", [["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
+    ["Intel", [["Arc Pro B70 32GB", 32, 608, "d"], ["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
     ["Apple (unified memory)", [
       ["M3 Ultra 512GB", 512, 819, "u"], ["M3 Ultra 256GB", 256, 819, "u"], ["M3 Ultra 96GB", 96, 819, "u"],
       ["M5 Max 128GB", 128, 614, "u"], ["M5 Max 64GB", 64, 614, "u"], ["M5 Max 36GB", 36, 460, "u"],

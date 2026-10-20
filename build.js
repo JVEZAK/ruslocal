@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.4
+// RunsLocal static site builder — v2.5
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -116,7 +116,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB pages (v1.9) ----------
 // One page per common VRAM size, using a typical card of that size for speed estimates.
-const TIERS = [[8, "RTX 4060"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [24, "RTX 4090"], [32, "RTX 5090"]];
+const TIERS = [[8, "RTX 4060"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"]];
 const bestFile = gb => `best/${gb}gb-gpu.html`;
 const aGb = gb => (gb === 8 ? "an " : "a ") + gb + " GB";
 function bestPage([gb, ref]) {
