@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.5
+// RunsLocal static site builder — v2.6
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -64,7 +64,7 @@ function gpuPage(h) {
 ${rows.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td><span class="tag ${RL.TIER[r.tier][1]}">${RL.TIER[r.tier][0]}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${r.tps ? RL.fmtTps(r.tps) + " tok/s" : "—"}</td></tr>`).join("\n")}
 </tbody></table></div>
 <p class="meta">Specs used: ${memLabel(h)}, ${h[2]} GB/s memory bandwidth. Speeds are estimates for generating text with llama.cpp-style runtimes; real numbers usually land within about 20%.</p>
-<h2 class="sec">Similar hardware</h2><p class="links">${gpus.filter(x => x !== h).sort((a, b) => Math.abs(Math.log(a[1] / h[1])) - Math.abs(Math.log(b[1] / h[1])) || Math.abs(a[2] - h[2]) - Math.abs(b[2] - h[2])).slice(0, 5).map(x => `<a href="../${gpuFile(x)}">${esc(x[0])}</a>`).join("")}${TIERS.filter(([gb]) => gb === h[1]).map(([gb]) => `<a href="../${bestFile(gb)}">Best models for ${gb} GB GPUs</a>`).join("")}</p>
+<h2 class="sec">Similar hardware</h2><p class="links">${gpus.filter(x => x !== h).sort((a, b) => Math.abs(Math.log(a[1] / h[1])) - Math.abs(Math.log(b[1] / h[1])) || Math.abs(a[2] - h[2]) - Math.abs(b[2] - h[2])).slice(0, 5).map(x => `<a href="../${gpuFile(x)}">${esc(x[0])}</a>`).join("")}${h[3] === "d" ? TIERS.filter(([gb]) => gb === h[1]).map(([gb]) => `<a href="../${bestFile(gb)}">Best models for ${gb} GB GPUs</a>`).join("") : UTIERS.filter(([gb]) => gb === h[1]).map(([gb]) => `<a href="../${uBestFile(gb)}">Best models for ${gb} GB unified memory</a>`).join("")}</p>
 <h2 class="sec">Apps that support the ${esc(h[0])}</h2>
 <p class="links">${TOOLS.filter(t => !t.via && t.gpu.includes(vendorOf(h))).map(t => `<a href="../${toolFile(t)}">${esc(t.name)}</a>`).join("")}</p>
 ${footer}</div>`;
@@ -107,7 +107,7 @@ ${full.map(({ h, r }) => `<tr><td><a href="../${gpuFile(h)}">${esc(h[0])}</a></t
 ${off.length ? `<h2 class="sec">Runs with offload to system RAM (slower)</h2>
 <p class="links">${off.slice(0, 24).map(({ h, r }) => `<a href="../${gpuFile(h)}">${esc(h[0])}</a> <span class="meta">~${RL.fmtTps(r.tps)} tok/s</span>`).join(" · ")}</p>` : ""}
 <h2 class="sec">Similar-size models</h2><p class="links">${similar.map(x => `<a href="../${modelFile(x)}">${esc(x[0])}</a>`).join("")}</p>
-<h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}</p>
+<h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="../${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</p>
 <p class="meta">Assumes ${DEF.ram} GB of DDR5 system RAM for offload. Estimates only; real speeds usually land within about 20%.</p>
 ${footer}</div>`;
   return fullDoc(head({ title, desc: answer.slice(0, 300), url, ld: faq([[`What GPU do I need to run ${m[0]}?`, answer]]) }), body);
@@ -145,6 +145,37 @@ ${cards.length ? `<h2 class="sec">${gb} GB graphics cards</h2><p class="links">$
 <p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Cards with the same VRAM but different bandwidth will be faster or slower in proportion.</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models for ${aGb(gb)} GPU (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${aGb(gb)} GPU?`, answer]]) }), body);
+}
+
+// ---------- Best model for N GB unified memory (v2.6) ----------
+// Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
+const UTIERS = [[64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
+const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
+function uBestPage([gb, ref]) {
+  const h = RL.flat.find(x => x[0] === ref);
+  const full = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu").sort((a, b) => b.m[1] - a.m[1]);
+  const top = full.slice(0, 4);
+  const fastBig = full.filter(x => x.m[2] < x.m[1] * 0.5).sort((a, b) => b.m[1] - a.m[1]).slice(0, 2);
+  const machines = gpus.filter(x => x[3] === "u" && x[1] === gb);
+  const label = `a ${gb} GB Mac or unified-memory PC`;
+  let answer = `The best local AI models for ${label} are the largest that fit in about ${Math.round(gb * 0.72)} GB of usable memory at Q4_K_M or better: ${top.map(x => `${x.m[0]} (${x.r.q}, ${prosTps(x.r.tps)} tokens/sec on an ${ref})`).join(", ")}.`;
+  if (fastBig.length) answer += ` Mixture-of-experts models such as ${fastBig.map(x => x.m[0]).join(" and ")} stay fast because only their active parameters are read per token.`;
+  answer += ` Estimates assume 8K context.`;
+  const url = `${SITE}/${clean(uBestFile(gb))}`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / Best models for ${gb} GB unified memory</p>
+<h1>Best local AI models for ${label}</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check your exact machine</a>
+<h2 class="sec">Fits in ${gb} GB of unified memory</h2>
+<div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Best quant</th><th>Memory needed</th><th>Est. speed (${esc(ref)})</th></tr></thead><tbody>
+${full.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${RL.fmtTps(r.tps)} tok/s</td></tr>`).join("\n")}
+</tbody></table></div>
+${machines.length ? `<h2 class="sec">${gb} GB machines</h2><p class="links">${machines.map(c => `<a href="../${gpuFile(c)}">${esc(c[0])}</a>`).join("")}</p>` : ""}
+<h2 class="sec">Other memory sizes</h2><p class="links">${UTIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-unified-memory.html">${t[0]} GB unified</a>`).join("")}${TIERS.map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB GPU</a>`).join("")}</p>
+<p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Machines with the same memory but different bandwidth, like the DGX Spark (273 GB/s) or Ryzen AI Max+ 395 (256 GB/s), run about half as fast. macOS can be set to give the GPU more than the default share of memory.</p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local AI models for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${label}?`, answer]]) }), body);
 }
 
 // ---------- Local AI tools directory ----------
@@ -244,7 +275,7 @@ ${footer}</div>`;
 function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2>What can my GPU run?</h2>${byGroup}</section>
-<section class="browse"><h2>Best models by VRAM</h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}</div></section>
+<section class="browse"><h2>Best models by VRAM</h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
 <section class="browse"><h2>What do I need to run a model?</h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
@@ -275,6 +306,7 @@ function llmsTxt() {
   });
   lines.push("", "## Best models by VRAM size");
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
+  UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
   lines.push("", "## Models");
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
   lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
@@ -292,6 +324,7 @@ write("artifact", "index.html", homeHead() + "\n" + homeBody());
 gpus.forEach(h => { const f = gpuFile(h), html = gpuPage(h); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 RL.MODELS.forEach(m => { const f = modelFile(m), html = modelPage(m); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
+UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
@@ -301,4 +334,4 @@ write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xm
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TIERS.length + UTIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
