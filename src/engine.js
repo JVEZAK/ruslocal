@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.6 · data Oct 21, 2026
+// v2.7 · data Oct 22, 2026
 (function (root) {
-  const VERSION = "v2.6";
-  const DATA_DATE = "Oct 21, 2026";
+  const VERSION = "v2.7";
+  const DATA_DATE = "Oct 22, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -62,7 +62,9 @@
     ["Nemotron 3.5 Bolt 74B-A9B", 74, 9, 0.4, "MoE · vision", "NVIDIA hybrid Mamba, Oct 2026; official 2-bit build is ~22 GB"],
     ["Nemotron 3.5 Super VL 120B-A12B", 120, 12, 0.6, "MoE · vision", "NVIDIA hybrid Mamba, Oct 2026; 1M context"],
     ["Kolibri-1 78B-A3.5B", 78.1, 3.46, 0.3, "MoE", "Aleph Alpha, Oct 2026; Apache 2.0, mostly sliding-window attention"],
-    ["Step 5 Preview 600B-A27B", 600, 27, 1.0, "MoE · vision", "StepFun, Oct 2026; long-horizon agents, 1M context"]
+    ["Step 5 Preview 600B-A27B", 600, 27, 1.0, "MoE · vision", "StepFun, Oct 2026; long-horizon agents, 1M context"],
+    ["Jais 3 32B", 34.78, 34.78, 2.0, "general · Arabic", "MBZUAI/IFM, Oct 2026; Apache 2.0, Arabic-English, 512K context"],
+    ["Jais 3 MoVA 36B-A4B", 37.44, 5.95, 1.0, "MoE · Arabic", "MBZUAI/IFM, Oct 2026; ~6B active, 512K context"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

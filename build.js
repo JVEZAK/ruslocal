@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.6
+// RunsLocal static site builder — v2.7
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -149,7 +149,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB unified memory (v2.6) ----------
 // Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
-const UTIERS = [[64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
+const UTIERS = [[32, "M5 32GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
 const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
 function uBestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
@@ -173,7 +173,7 @@ ${full.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><
 </tbody></table></div>
 ${machines.length ? `<h2 class="sec">${gb} GB machines</h2><p class="links">${machines.map(c => `<a href="../${gpuFile(c)}">${esc(c[0])}</a>`).join("")}</p>` : ""}
 <h2 class="sec">Other memory sizes</h2><p class="links">${UTIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-unified-memory.html">${t[0]} GB unified</a>`).join("")}${TIERS.map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB GPU</a>`).join("")}</p>
-<p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Machines with the same memory but different bandwidth, like the DGX Spark (273 GB/s) or Ryzen AI Max+ 395 (256 GB/s), run about half as fast. macOS can be set to give the GPU more than the default share of memory.</p>
+<p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Machines with the same memory but different bandwidth run faster or slower in proportion${h[2] > 400 ? ", so the DGX Spark (273 GB/s) or Ryzen AI Max+ 395 (256 GB/s) run about half as fast" : ""}. macOS can be set to give the GPU more than the default share of memory.</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${label}?`, answer]]) }), body);
 }
