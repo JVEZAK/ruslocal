@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.8 · data Oct 23, 2026
+// v2.9 · data Oct 24, 2026
 (function (root) {
-  const VERSION = "v2.8";
-  const DATA_DATE = "Oct 23, 2026";
+  const VERSION = "v2.9";
+  const DATA_DATE = "Oct 24, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -65,7 +65,8 @@
     ["Step 5 Preview 600B-A27B", 600, 27, 1.0, "MoE · vision", "StepFun, Oct 2026; long-horizon agents, 1M context"],
     ["Jais 3 32B", 34.78, 34.78, 2.0, "general · Arabic", "MBZUAI/IFM, Oct 2026; Apache 2.0, Arabic-English, 512K context"],
     ["Jais 3 MoVA 36B-A4B", 37.44, 5.95, 1.0, "MoE · Arabic", "MBZUAI/IFM, Oct 2026; ~6B active, 512K context"],
-    ["MiniMax M3.1 Flash 428B-A23B", 428, 23, 0.8, "MoE · vision", "MiniMax, weights Oct 23, 2026; ~23B active, 1M context, community license"]
+    ["MiniMax M3.1 Flash 428B-A23B", 428, 23, 0.8, "MoE · vision", "MiniMax, weights Oct 23, 2026; ~23B active, 1M context, community license"],
+    ["Recursive Flint 40B-A2.5B", 39.8, 2.5, 0.3, "MoE · coding", "Recursive, Oct 2026; Apache 2.0 local coding agent model, 262K context"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

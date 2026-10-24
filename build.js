@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.8
+// RunsLocal static site builder — v2.9
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -149,7 +149,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB unified memory (v2.6) ----------
 // Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
-const UTIERS = [[32, "M5 32GB"], [36, "M5 Max 36GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
+const UTIERS = [[32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
 const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
 function uBestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
