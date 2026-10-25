@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v2.9 · data Oct 24, 2026
+// v3.0 · data Oct 25, 2026
 (function (root) {
-  const VERSION = "v2.9";
-  const DATA_DATE = "Oct 24, 2026";
+  const VERSION = "v3.0";
+  const DATA_DATE = "Oct 25, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [

@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v2.9
+// RunsLocal static site builder — v3.0
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -149,13 +149,13 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB unified memory (v2.6) ----------
 // Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
-const UTIERS = [[32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
+const UTIERS = [[16, "M5 16GB"], [32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
 const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
 function uBestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
   const full = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu").sort((a, b) => b.m[1] - a.m[1]);
   const top = full.slice(0, 4);
-  const fastBig = full.filter(x => x.m[2] < x.m[1] * 0.5).sort((a, b) => b.m[1] - a.m[1]).slice(0, 2);
+  const fastBig = full.filter(x => x.m[2] < x.m[1] * 0.5 && x.m[4].includes("MoE")).sort((a, b) => b.m[1] - a.m[1]).slice(0, 2);
   const machines = gpus.filter(x => x[3] === "u" && x[1] === gb);
   const label = `a ${gb} GB Mac or unified-memory PC`;
   let answer = `The best local AI models for ${label} are the largest that fit in about ${Math.round(gb * 0.72)} GB of usable memory at Q4_K_M or better: ${top.map(x => `${x.m[0]} (${x.r.q}, ${prosTps(x.r.tps)} tokens/sec on an ${ref})`).join(", ")}.`;

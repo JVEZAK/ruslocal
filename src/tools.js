@@ -1,4 +1,4 @@
-// RunsLocal tools directory data — v2.9 · data Oct 24, 2026
+// RunsLocal tools directory data — v3.0 · data Oct 25, 2026
 // Apps for running AI models on your own hardware. Keep facts conservative and verifiable;
 // the CEO agent updates this list. gpu: N=NVIDIA, A=AMD, I=Intel Arc, M=Apple Silicon, C=CPU only.
 // os: W=Windows, M=macOS, L=Linux. via: "backend" means it uses another engine (e.g. Ollama) for the GPU work.
@@ -60,6 +60,9 @@ module.exports = {
       note: "Command-line coding assistant that works with local models through Ollama or any OpenAI-compatible server." },
     { name: "OpenCode", cat: "coding", url: "https://opencode.ai", open: true, os: "WML", via: "backend", level: "Intermediate",
       best: "A terminal coding agent that can run on local models",
-      note: "Open-source coding agent that connects to local servers like Ollama." }
+      note: "Open-source coding agent that connects to local servers like Ollama." },
+    { name: "Codex CLI", cat: "coding", url: "https://developers.openai.com/codex/cli", open: true, os: "WML", via: "backend", level: "Intermediate",
+      best: "OpenAI's terminal coding agent, pointed at a local model instead of the cloud",
+      note: "Apache 2.0 coding agent from OpenAI. Run codex --oss (or ollama launch codex) to use a local Ollama model; needs a tool-capable model with 64K+ context." }
   ]
 };
