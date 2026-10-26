@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.0 · data Oct 25, 2026
+// v3.1 · data Oct 26, 2026
 (function (root) {
-  const VERSION = "v3.0";
-  const DATA_DATE = "Oct 25, 2026";
+  const VERSION = "v3.1";
+  const DATA_DATE = "Oct 26, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -66,7 +66,9 @@
     ["Jais 3 32B", 34.78, 34.78, 2.0, "general · Arabic", "MBZUAI/IFM, Oct 2026; Apache 2.0, Arabic-English, 512K context"],
     ["Jais 3 MoVA 36B-A4B", 37.44, 5.95, 1.0, "MoE · Arabic", "MBZUAI/IFM, Oct 2026; ~6B active, 512K context"],
     ["MiniMax M3.1 Flash 428B-A23B", 428, 23, 0.8, "MoE · vision", "MiniMax, weights Oct 23, 2026; ~23B active, 1M context, community license"],
-    ["Recursive Flint 40B-A2.5B", 39.8, 2.5, 0.3, "MoE · coding", "Recursive, Oct 2026; Apache 2.0 local coding agent model, 262K context"]
+    ["Recursive Flint 40B-A2.5B", 39.8, 2.5, 0.3, "MoE · coding", "Recursive, Oct 2026; Apache 2.0 local coding agent model, 262K context"],
+    ["Nanbeige4.3 33B", 33.1, 33.1, 1.7, "coding · agentic", "BOSS Zhipin Nanbeige Lab, Oct 2026; dense, Apache 2.0, 512K context"],
+    ["Nemotron 3.5 Bolt E4B", 8, 4.5, 0.3, "small · agentic", "NVIDIA, Oct 23, 2026; post-trained from Gemma 4 E4B, 64K context"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
