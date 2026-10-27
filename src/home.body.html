@@ -51,9 +51,9 @@
       <h3>How much VRAM do I need for a local LLM?</h3>
       <p>At Q4_K_M, plan on about 0.6 GB per billion parameters plus context. A 9B model fits in 8 GB, 27B–31B models need about 20 GB, and a 70B model needs about 45 GB.</p>
       <h3>What's the best model for a 16 GB card?</h3>
-      <p>Qwen3.6 35B-A3B and Gemma 4 26B A4B run well with light offload because they're MoE. Gemma 4 12B fits fully at Q8.</p>
+      <p>{{FAQ16}}</p>
       <h3>What's the best model for 24 GB (RTX 3090 / 4090)?</h3>
-      <p>Qwen3.8 27B, Gemma 4 31B and Qwen3.6 27B at Q4_K_M, with room for 8K–32K of context.</p>
+      <p>{{FAQ24}}</p>
       <h3>Can I run a model bigger than my VRAM?</h3>
       <p>Yes, with offload to system RAM, but it slows down. MoE models handle offload far better than dense models.</p>
       <h3>Does AMD or Intel work?</h3>
