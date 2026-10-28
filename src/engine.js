@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.2 · data Oct 27, 2026
+// v3.3 · data Oct 28, 2026
 (function (root) {
-  const VERSION = "v3.2";
-  const DATA_DATE = "Oct 27, 2026";
+  const VERSION = "v3.3";
+  const DATA_DATE = "Oct 28, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -68,7 +68,8 @@
     ["MiniMax M3.1 Flash 428B-A23B", 428, 23, 0.8, "MoE · vision", "MiniMax, weights Oct 23, 2026; ~23B active, 1M context, community license"],
     ["Recursive Flint 40B-A2.5B", 39.8, 2.5, 0.3, "MoE · coding", "Recursive, Oct 2026; Apache 2.0 local coding agent model, 262K context"],
     ["Nanbeige4.3 33B", 33.1, 33.1, 1.7, "coding · agentic", "BOSS Zhipin Nanbeige Lab, Oct 2026; dense, Apache 2.0, 512K context"],
-    ["Nemotron 3.5 Bolt E4B", 8, 4.5, 0.3, "small · agentic", "NVIDIA, Oct 23, 2026; post-trained from Gemma 4 E4B, 64K context"]
+    ["Nemotron 3.5 Bolt E4B", 8, 4.5, 0.3, "small · agentic", "NVIDIA, Oct 23, 2026; post-trained from Gemma 4 E4B, 64K context"],
+    ["LFM3 1.7B", 1.73, 1.73, 0.1, "small · agentic", "Liquid AI, Oct 27, 2026; tri-hybrid conv/attention, 256K context, LFM Open License"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

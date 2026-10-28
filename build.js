@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v3.2
+// RunsLocal static site builder — v3.3
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -281,7 +281,7 @@ function browseLinks() {
 }
 function homeBody() {
   const tool = fs.readFileSync("src/home.body.html", "utf8");
-  return tool.replace("<!--BROWSE-->", browseLinks()).replace("/*__ENGINE__*/", ENGINE).replace("{{FAQ16}}", esc(FAQ16) + ` <a href="${bestFile(16)}">All 16 GB picks</a>`).replace("{{FAQ24}}", esc(FAQ24) + ` <a href="${bestFile(24)}">All 24 GB picks</a>`).replaceAll("{{VERSION}}", RL.VERSION).replaceAll("{{DATA_DATE}}", RL.DATA_DATE);
+  return tool.replace("<!--BROWSE-->", browseLinks()).replace("/*__ENGINE__*/", ENGINE).replace("{{FAQ8}}", esc(FAQ8) + ` <a href="${bestFile(8)}">All 8 GB picks</a>`).replace("{{FAQ16}}", esc(FAQ16) + ` <a href="${bestFile(16)}">All 16 GB picks</a>`).replace("{{FAQ24}}", esc(FAQ24) + ` <a href="${bestFile(24)}">All 24 GB picks</a>`).replaceAll("{{VERSION}}", RL.VERSION).replaceAll("{{DATA_DATE}}", RL.DATA_DATE);
 }
 // v3.2: the 16 GB / 24 GB answers are generated from the same ranking as the best-by-VRAM pages, so they never go stale.
 function tierFaq(gb) {
@@ -293,9 +293,11 @@ function tierFaq(gb) {
   if (off.length) a += ` Mixture-of-experts models like ${off[0].m[0]} also run usably with offload to system RAM.`;
   return a;
 }
-const FAQ16 = tierFaq(16), FAQ24 = tierFaq(24);
+// v3.3: 8 GB answer added (the most common VRAM size and search query).
+const FAQ8 = tierFaq(8), FAQ16 = tierFaq(16), FAQ24 = tierFaq(24);
 const homeFaq = [
   ["How much VRAM do I need to run a local LLM?", "At the common Q4_K_M quantization a model needs about 0.6 GB per billion parameters, plus room for the context (KV cache) and about 0.5 GB of runtime overhead. A 9B model fits in 8 GB, 27B-31B models need about 20 GB, and a 70B model needs about 45 GB."],
+  ["What is the best local AI model for an 8 GB GPU like the RTX 4060?", FAQ8],
   ["What is the best local AI model for a 16 GB GPU?", FAQ16],
   ["What is the best local AI model for a 24 GB GPU like the RTX 3090 or 4090?", FAQ24],
   ["Can I run a model bigger than my VRAM?", "Yes. llama.cpp and Ollama can offload part of the model to system RAM. The part in RAM runs at RAM speed, so generation slows down. Mixture-of-experts models handle offload far better than dense models."],
