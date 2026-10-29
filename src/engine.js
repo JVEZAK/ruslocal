@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.3 · data Oct 28, 2026
+// v3.4 · data Oct 29, 2026
 (function (root) {
-  const VERSION = "v3.3";
-  const DATA_DATE = "Oct 28, 2026";
+  const VERSION = "v3.4";
+  const DATA_DATE = "Oct 29, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -16,7 +16,7 @@
       ["RTX 3080 10GB", 10, 760, "d"], ["RTX 3070", 8, 448, "d"], ["RTX 3060 Ti", 8, 448, "d"], ["RTX 3060 12GB", 12, 360, "d"],
       ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
-      ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
+      ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
       ["Ryzen AI Max+ 395 128GB", 128, 256, "u"], ["Ryzen AI Max+ 395 64GB", 64, 256, "u"]]],
     ["Intel", [["Arc Pro B70 32GB", 32, 608, "d"], ["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
@@ -49,6 +49,7 @@
     ["Phi-4 14B", 14.7, 14.7, 1.6, "reasoning", "Microsoft, 16K context"],
     ["Ministral 3 3B", 3.8, 3.8, 0.3, "small", "Tiny and quick"],
     ["Mistral Small 3.1 24B", 24, 24, 1.3, "general", "Reliable mid-size"],
+    ["Granite 4.1 8B", 8.8, 8.8, 1.3, "general", "IBM, Apr 2026; dense, Apache 2.0, 128K context"],
     ["Granite 4.2 30B", 29.3, 29.3, 0.3, "general", "IBM hybrid, light cache"],
     ["Hermes 4.3 36B", 36.2, 36.2, 1.5, "general", "Nous Research"],
     ["Llama 3.3 70B", 70.6, 70.6, 2.6, "general", "Classic 70B"],
