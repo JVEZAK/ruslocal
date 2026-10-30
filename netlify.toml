@@ -17,3 +17,14 @@
   from = "/wp-sitemap.xml"
   to = "/sitemap.xml"
   status = 301
+
+# v3.5: /models and /gpus were 404s in the request logs; send them to real pages
+[[redirects]]
+  from = "/models"
+  to = "/model/"
+  status = 301
+
+[[redirects]]
+  from = "/gpus"
+  to = "/"
+  status = 301

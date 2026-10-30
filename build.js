@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v3.4
+// RunsLocal static site builder — v3.5
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -92,7 +92,7 @@ function modelPage(m) {
   const title = `What GPU do I need to run ${m[0]}? | ${BRAND}`;
   const url = `${SITE}/${clean(modelFile(m))}`;
   const body = `<div class="wrap">${topbar("../")}
-<p class="crumb"><a href="../index.html">All models</a> / ${esc(m[0])}</p>
+<p class="crumb"><a href="index.html">All models</a> / ${esc(m[0])}</p>
 <h1>What GPU do I need to run ${esc(m[0])}?</h1>
 <p class="answer">${esc(answer)}</p>
 <a class="cta" href="../index.html">Check your own hardware</a>
@@ -271,12 +271,38 @@ ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI apps for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI app for ${label}?`, answer]]) }), body);
 }
 
+// ---------- All models index (v3.5) ----------
+// /model/ was a 404 (crawlers and people try /models); one table of every model with its Q4 memory need.
+function modelsIndex() {
+  const url = `${SITE}/model/`;
+  const rows = RL.MODELS.map(m => {
+    const q4 = m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD;
+    const card = gpus.filter(h => h[3] === "d" && RL.evaluate(m, h, DEF.ram, DEF.ramBw, DEF.ctx).tier === "gpu").sort((a, b) => a[1] - b[1] || a[2] - b[2])[0];
+    const uni = gpus.filter(h => h[3] === "u" && RL.evaluate(m, h, DEF.ram, DEF.ramBw, DEF.ctx).tier === "gpu").sort((a, b) => a[1] - b[1] || a[2] - b[2])[0];
+    return { m, q4, fit: card ? `${card[1]} GB GPU (${card[0]})` : uni ? `${uni[1]} GB unified (${uni[0]})` : "Multi-GPU server" };
+  }).sort((a, b) => a.q4 - b.q4);
+  const small = rows.filter(x => x.q4 <= 8 - 0.6), mid = rows.filter(x => x.q4 > 7.4 && x.q4 <= 23.4);
+  const answer = `RunsLocal tracks ${rows.length} open-weight AI models. At Q4_K_M with 8K context they need from about ${rows[0].q4.toFixed(1)} GB (${rows[0].m[0]}) to about ${Math.round(rows[rows.length - 1].q4)} GB (${rows[rows.length - 1].m[0]}). ${small.length} fit fully on an 8 GB graphics card and ${small.length + mid.length} fit on a 24 GB card like the RTX 4090.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / All models</p>
+<h1>All local AI models: how much memory each one needs</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which ones your hardware runs</a>
+<div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Parameters</th><th>Q4_K_M memory</th><th>Smallest hardware that runs it on the GPU at Q4_K_M or better</th></tr></thead><tbody>
+${rows.map(({ m, q4, fit }) => `<tr><td><a href="${RL.slug(m[0])}.html">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td class="num">${m[1]}B${m[1] !== m[2] ? ` (${m[2]}B active)` : ""}</td><td class="num">${q4.toFixed(1)} GB</td><td>${esc(fit)}</td></tr>`).join("\n")}
+</tbody></table></div>
+<p class="meta">Memory = parameters x 4.85 bits / 8 + KV cache for 8K context + 0.5 GB overhead. Mixture-of-experts models can also run with part of the model in system RAM; see each model's page.</p>
+<h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="../${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</p>
+${footer}</div>`;
+  return fullDoc(head({ title: `All local AI models and the VRAM they need (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["How much memory do popular local AI models need?", answer]]) }), body);
+}
+
 // ---------- Home / tool ----------
 function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2>What can my GPU run?</h2>${byGroup}</section>
 <section class="browse"><h2>Best models by VRAM</h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
-<section class="browse"><h2>What do I need to run a model?</h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
+<section class="browse"><h2><a href="model/index.html" style="color:inherit">What do I need to run a model?</a></h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
 function homeBody() {
@@ -322,7 +348,7 @@ function llmsTxt() {
   lines.push("", "## Best models by VRAM size");
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
   UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
-  lines.push("", "## Models");
+  lines.push("", `## Models ([all models with memory needed](${SITE}/model/))`);
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
   lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
   VPAGES.forEach(v => lines.push(`- [Best local AI apps for ${v[2]}](${SITE}/${clean(vendorFile(v))})`));
@@ -338,6 +364,7 @@ write("dist", "index.html", fullDoc(homeHead(), homeBody()));
 write("artifact", "index.html", homeHead() + "\n" + homeBody());
 gpus.forEach(h => { const f = gpuFile(h), html = gpuPage(h); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 RL.MODELS.forEach(m => { const f = modelFile(m), html = modelPage(m); write("dist", f, html); write("artifact", f, html); pages.push(f); });
+write("dist", "model/index.html", modelsIndex()); pages.push("model/");
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
 UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
@@ -349,4 +376,4 @@ write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xm
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + ${TIERS.length + UTIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
