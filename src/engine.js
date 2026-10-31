@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.5 · data Oct 30, 2026
+// v3.6 · data Oct 31, 2026
 (function (root) {
-  const VERSION = "v3.5";
-  const DATA_DATE = "Oct 30, 2026";
+  const VERSION = "v3.6";
+  const DATA_DATE = "Oct 31, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -52,6 +52,7 @@
     ["Granite 4.1 8B", 8.8, 8.8, 1.3, "general", "IBM, Apr 2026; dense, Apache 2.0, 128K context"],
     ["Granite 4.2 30B", 29.3, 29.3, 0.3, "general", "IBM hybrid, light cache"],
     ["Hermes 4.3 36B", 36.2, 36.2, 1.5, "general", "Nous Research"],
+    ["Apertus 1.5 70B", 70, 70, 2.7, "general · vision", "Swiss AI (ETH/EPFL), Jul 2026; dense, Apache 2.0, fully open data, 1,800+ languages, 262K context"],
     ["Llama 3.3 70B", 70.6, 70.6, 2.6, "general", "Classic 70B"],
     ["Llama 4 Scout", 109, 17, 1.5, "MoE · vision", "17B active"],
     ["GLM-5.3-Flash", 320, 18, 1.5, "MoE · coding", "Strongest MIT-licensed mid model"],
