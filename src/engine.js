@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.6 · data Oct 31, 2026
+// v3.7 · data Nov 1, 2026
 (function (root) {
-  const VERSION = "v3.6";
-  const DATA_DATE = "Oct 31, 2026";
+  const VERSION = "v3.7";
+  const DATA_DATE = "Nov 1, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -72,7 +72,7 @@
     ["Nanbeige4.3 33B", 33.1, 33.1, 1.7, "coding · agentic", "BOSS Zhipin Nanbeige Lab, Oct 2026; dense, Apache 2.0, 512K context"],
     ["Nemotron 3.5 Bolt E4B", 8, 4.5, 0.3, "small · agentic", "NVIDIA, Oct 23, 2026; post-trained from Gemma 4 E4B, 64K context"],
     ["LFM3 1.7B", 1.73, 1.73, 0.1, "small · agentic", "Liquid AI, Oct 27, 2026; tri-hybrid conv/attention, 256K context, LFM Open License"],
-    ["Mistral Large 4", 1000, 49, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; ~1T total, 49B active, 1M context, Mistral open-weight license"]
+    ["Mistral Large 4", 1050, 52, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; 1.05T total, 52B active (per Mistral docs and the A52B checkpoint), 1M context, Mistral open-weight license"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

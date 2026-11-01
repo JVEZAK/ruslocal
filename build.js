@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v3.6
+// RunsLocal static site builder — v3.7
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -178,6 +178,36 @@ ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${label}?`, answer]]) }), body);
 }
 
+// ---------- Best-by-memory hub at /best/ (v3.7: /best/ was a 404) ----------
+function bestIndex() {
+  const url = `${SITE}/best/`;
+  const mk = (gb, ref, kind) => {
+    const h = RL.flat.find(x => x[0] === ref);
+    const full = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu").sort((a, b) => b.m[1] - a.m[1]);
+    return { gb, ref, kind, file: kind === "d" ? bestFile(gb).replace("best/", "") : uBestFile(gb).replace("best/", ""), top: full[0], n: full.length };
+  };
+  const rows = TIERS.map(([gb, ref]) => mk(gb, ref, "d")).concat(UTIERS.map(([gb, ref]) => mk(gb, ref, "u")));
+  const d = rows.filter(r => r.kind === "d"), u = rows.filter(r => r.kind === "u");
+  const say = r => `${r.gb} GB: ${r.top ? r.top.m[0] + " (" + r.top.r.q + ")" : "small models only"}`;
+  const answer = `The biggest local AI model you can run depends mostly on memory. At 8K context and Q4_K_M or better, the largest models that fit fully on a graphics card are ${d.map(say).join("; ")}. On a Mac or other unified-memory PC: ${u.map(say).join("; ")}.`;
+  const table = list => `<div class="tablewrap"><table class="ref"><thead><tr><th>Memory</th><th>Reference hardware</th><th>Models that fit</th><th>Largest model that fits</th></tr></thead><tbody>
+${list.map(r => `<tr><td><a href="${r.file}">${r.gb} GB${r.kind === "u" ? " unified" : " GPU"}</a></td><td>${esc(r.ref)}</td><td class="num">${r.n}</td><td>${r.top ? `<a href="../${modelFile(r.top.m)}">${esc(r.top.m[0])}</a> ${esc(r.top.r.q)}, ~${RL.fmtTps(r.top.r.tps)} tok/s` : "Small models only"}</td></tr>`).join("\n")}
+</tbody></table></div>`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / Best models by memory</p>
+<h1>Best local AI models by VRAM and unified memory</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check your exact setup</a>
+<h2 class="sec">Graphics cards (VRAM)</h2>
+${table(d)}
+<h2 class="sec">Macs and unified-memory PCs</h2>
+${table(u)}
+<p class="meta">Assumes ${DEF.ram} GB of system RAM and 8K context. Unified memory counts ~72% of RAM as usable; discrete cards count VRAM minus 0.6 GB.</p>
+<p class="links"><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local AI models by VRAM: 8 GB to 128 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the biggest AI model I can run locally for my VRAM?", answer]]) }), body);
+}
+
 // ---------- Local AI tools directory ----------
 const VENDORS = [["N", "NVIDIA"], ["A", "AMD"], ["I", "Intel Arc"], ["M", "Apple Silicon"], ["C", "CPU only"]];
 const OSN = { W: "Windows", M: "macOS", L: "Linux" };
@@ -325,7 +355,7 @@ ${footer}</div>`;
 function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2><a href="gpu/index.html" style="color:inherit">What can my GPU run?</a></h2>${byGroup}</section>
-<section class="browse"><h2>Best models by VRAM</h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
+<section class="browse"><h2><a href="best/index.html" style="color:inherit">Best models by VRAM</a></h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="model/index.html" style="color:inherit">What do I need to run a model?</a></h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
@@ -369,7 +399,7 @@ function llmsTxt() {
     const full = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu").sort((a, b) => b.m[1] - a.m[1]).slice(0, 3);
     lines.push(`- [${h[0]}](${SITE}/${clean(gpuFile(h))}) (${h[1]} GB): ${full.length ? full.map(x => `${x.m[0]} ${x.r.q} ~${RL.fmtTps(x.r.tps)} tok/s`).join("; ") : "small models only, see page"}`);
   });
-  lines.push("", "## Best models by VRAM size");
+  lines.push("", `## Best models by VRAM size ([overview](${SITE}/best/))`);
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
   UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
   lines.push("", `## Models ([all models with memory needed](${SITE}/model/))`);
@@ -392,6 +422,7 @@ write("dist", "model/index.html", modelsIndex()); pages.push("model/");
 write("dist", "gpu/index.html", gpusIndex()); pages.push("gpu/");
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
 UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });
+write("dist", "best/index.html", bestIndex()); pages.push("best/");
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
@@ -401,4 +432,4 @@ write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xm
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 1 + VPAGES.length} tools pages for ${SITE}`);
