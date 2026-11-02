@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.7 · data Nov 1, 2026
+// v3.8 · data Nov 2, 2026
 (function (root) {
-  const VERSION = "v3.7";
-  const DATA_DATE = "Nov 1, 2026";
+  const VERSION = "v3.8";
+  const DATA_DATE = "Nov 2, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -14,7 +14,7 @@
       ["RTX 4060 Ti 8GB", 8, 288, "d"], ["RTX 4060", 8, 272, "d"],
       ["RTX 3090 Ti", 24, 1008, "d"], ["RTX 3090", 24, 936, "d"], ["RTX 3080 Ti", 12, 912, "d"], ["RTX 3080 12GB", 12, 912, "d"],
       ["RTX 3080 10GB", 10, 760, "d"], ["RTX 3070", 8, 448, "d"], ["RTX 3060 Ti", 8, 448, "d"], ["RTX 3060 12GB", 12, 360, "d"],
-      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
+      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["RTX PRO 5000 Blackwell 72GB", 72, 1344, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
       ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
