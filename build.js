@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v3.8
+// RunsLocal static site builder — v3.9
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -116,7 +116,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB pages (v1.9) ----------
 // One page per common VRAM size, using a typical card of that size for speed estimates.
-const TIERS = [[8, "RTX 4060"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v3.8: workstation 72/96 GB tiers
+const TIERS = [[8, "RTX 4060"], [10, "RTX 3080 10GB"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v3.8: workstation 72/96 GB tiers; v3.9: 10 GB (RTX 3080 10GB)
 const bestFile = gb => `best/${gb}gb-gpu.html`;
 const aGb = gb => (gb === 8 ? "an " : "a ") + gb + " GB";
 function bestPage([gb, ref]) {
@@ -149,7 +149,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB unified memory (v2.6) ----------
 // Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
-const UTIERS = [[16, "M5 16GB"], [24, "M4 Pro 24GB"], [32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [128, "M4 Max 128GB"]];
+const UTIERS = [[16, "M5 16GB"], [24, "M4 Pro 24GB"], [32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [96, "M3 Ultra 96GB"], [128, "M4 Max 128GB"]]; // v3.9: 96 GB unified (M3 Ultra)
 const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
 function uBestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
