@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v3.9 · data Nov 3, 2026
+// v4.0 · data Nov 4, 2026
 (function (root) {
-  const VERSION = "v3.9";
-  const DATA_DATE = "Nov 3, 2026";
+  const VERSION = "v4.0";
+  const DATA_DATE = "Nov 4, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -17,7 +17,7 @@
       ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["RTX PRO 5000 Blackwell 72GB", 72, 1344, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
       ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
-      ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
+      ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 16GB", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
       ["Ryzen AI Max+ 395 128GB", 128, 256, "u"], ["Ryzen AI Max+ 395 64GB", 64, 256, "u"]]],
     ["Intel", [["Arc Pro B70 32GB", 32, 608, "d"], ["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
     ["Apple (unified memory)", [
@@ -72,7 +72,8 @@
     ["Nanbeige4.3 33B", 33.1, 33.1, 1.7, "coding · agentic", "BOSS Zhipin Nanbeige Lab, Oct 2026; dense, Apache 2.0, 512K context"],
     ["Nemotron 3.5 Bolt E4B", 8, 4.5, 0.3, "small · agentic", "NVIDIA, Oct 23, 2026; post-trained from Gemma 4 E4B, 64K context"],
     ["LFM3 1.7B", 1.73, 1.73, 0.1, "small · agentic", "Liquid AI, Oct 27, 2026; tri-hybrid conv/attention, 256K context, LFM Open License"],
-    ["Mistral Large 4", 1050, 52, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; 1.05T total, 52B active (per Mistral docs and the A52B checkpoint), 1M context, Mistral open-weight license"]
+    ["Mistral Large 4", 1050, 52, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; 1.05T total, 52B active (per Mistral docs and the A52B checkpoint), 1M context, Mistral open-weight license"],
+    ["Kimi K3", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Jul 2026; 2.8T total, 104B active, hybrid KDA/MLA attention, 1M context, Kimi K3 License; needs a multi-GPU server"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
