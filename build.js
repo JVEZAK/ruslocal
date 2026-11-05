@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.0
+// RunsLocal static site builder — v4.1
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -53,6 +53,17 @@ function gpuPage(h) {
   if (best.length) answer += ` The largest that fit are ${best.map(x => `${x.m[0]} (${x.r.q})`).join(", ")}.`;
   if (fast.length) answer += ` Fastest: ${fast.map(x => `${x.m[0]} at ${prosTps(x.r.tps)} tokens/sec`).join(" and ")}.`;
   if (off.length) answer += ` ${off.length} more ${off.length === 1 ? "runs" : "run"} with offload to system RAM, but slower.`;
+  // v4.1: second quotable Q&A per GPU page — best coding model that fits (visible + JSON-LD)
+  const codeQ = `What is the best coding model for the ${h[0]}?`;
+  const codeFit = full.filter(x => /coding/.test(x.m[4])).sort((a, b) => b.m[1] - a.m[1]);
+  const codeOff = rows.filter(x => /coding/.test(x.m[4]) && ["squeeze", "off"].includes(x.r.tier)).sort((a, b) => b.r.tps - a.r.tps);
+  let codeA;
+  if (codeFit.length) {
+    codeA = `The largest coding-focused model that fits fully in the ${h[0]}'s ${memLabel(h)} is ${codeFit[0].m[0]} (${codeFit[0].r.q}, ${prosTps(codeFit[0].r.tps)} tokens/sec at 8K context).`;
+    if (codeFit.length > 1) codeA += ` Other coding models that fit: ${listJoin(codeFit.slice(1, 4).map(x => `${x.m[0]} (${prosTps(x.r.tps)} tokens/sec)`))}.`;
+  } else if (codeOff.length) {
+    codeA = `No coding-focused model in our list fits fully in ${memLabel(h)} at Q4_K_M or better. The best option is ${codeOff[0].m[0]}, which runs ${codeOff[0].r.tier === "off" ? "with offload to system RAM" : "at " + codeOff[0].r.q} at ${prosTps(codeOff[0].r.tps)} tokens/sec.`;
+  } else codeA = `No coding-focused model in our list runs well with ${memLabel(h)}; try a small general model or a cloud API.`;
   const title = `What AI models can the ${h[0]} run? | ${BRAND}`;
   const url = `${SITE}/${clean(gpuFile(h))}`;
   const body = `<div class="wrap">${topbar("../")}
@@ -64,12 +75,13 @@ function gpuPage(h) {
 ${rows.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td><span class="tag ${RL.TIER[r.tier][1]}">${RL.TIER[r.tier][0]}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${r.tps ? RL.fmtTps(r.tps) + " tok/s" : "—"}</td></tr>`).join("\n")}
 </tbody></table></div>
 <p class="meta">Specs used: ${memLabel(h)}, ${h[2]} GB/s memory bandwidth. Speeds are estimates for generating text with llama.cpp-style runtimes; real numbers usually land within about 20%.</p>
+<h2 class="sec">${esc(codeQ)}</h2><p>${esc(codeA)}</p>
 <h2 class="sec">Similar hardware</h2><p class="links">${gpus.filter(x => x !== h).sort((a, b) => Math.abs(Math.log(a[1] / h[1])) - Math.abs(Math.log(b[1] / h[1])) || Math.abs(a[2] - h[2]) - Math.abs(b[2] - h[2])).slice(0, 5).map(x => `<a href="../${gpuFile(x)}">${esc(x[0])}</a>`).join("")}${h[3] === "d" ? TIERS.filter(([gb]) => gb === h[1]).map(([gb]) => `<a href="../${bestFile(gb)}">Best models for ${gb} GB GPUs</a>`).join("") : UTIERS.filter(([gb]) => gb === h[1]).map(([gb]) => `<a href="../${uBestFile(gb)}">Best models for ${gb} GB unified memory</a>`).join("")}</p>
 <h2 class="sec">Apps that support the ${esc(h[0])}</h2>
 <p class="links">${TOOLS.filter(t => !t.via && t.gpu.includes(vendorOf(h))).map(t => `<a href="../${toolFile(t)}">${esc(t.name)}</a>`).join("")}</p>
 ${footer}</div>`;
   const desc = answer.slice(0, 300);
-  return fullDoc(head({ title, desc, url, ld: faq([[`What AI models can the ${h[0]} run?`, answer]]) }), body);
+  return fullDoc(head({ title, desc, url, ld: faq([[`What AI models can the ${h[0]} run?`, answer], [codeQ, codeA]]) }), body);
 }
 
 // ---------- Model pages ----------
