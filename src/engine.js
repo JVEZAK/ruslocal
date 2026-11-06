@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v4.1 · data Nov 5, 2026
+// v4.2 · data Nov 6, 2026
 (function (root) {
-  const VERSION = "v4.1";
-  const DATA_DATE = "Nov 5, 2026";
+  const VERSION = "v4.2";
+  const DATA_DATE = "Nov 6, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -74,7 +74,8 @@
     ["LFM3 1.7B", 1.73, 1.73, 0.1, "small · agentic", "Liquid AI, Oct 27, 2026; tri-hybrid conv/attention, 256K context, LFM Open License"],
     ["Mistral Large 4", 1050, 52, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; 1.05T total, 52B active (per Mistral docs and the A52B checkpoint), 1M context, Mistral open-weight license"],
     ["Kimi K3", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Jul 2026; 2.8T total, 104B active, hybrid KDA/MLA attention, 1M context, Kimi K3 License; needs a multi-GPU server"],
-    ["Kimi K3.1 Pro", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Nov 2026; post-trained Kimi K3 (2.8T total, 104B active), 1M context, Kimi K3.1 Pro License; needs a multi-GPU server"]
+    ["Kimi K3.1 Pro", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Nov 2026; post-trained Kimi K3 (2.8T total, 104B active), 1M context, Kimi K3.1 Pro License; needs a multi-GPU server"],
+    ["Tencent Hy4", 770, 49, 0.8, "MoE · vision", "Tencent, full open weights Nov 4, 2026 (preview Aug 28); 770B total, 49B active, vision and computer use, 1M context; needs a multi-GPU server"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

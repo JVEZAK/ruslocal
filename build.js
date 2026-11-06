@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.1
+// RunsLocal static site builder — v4.2
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -107,6 +107,9 @@ function modelPage(m) {
   const macA = macs.length
     ? `Yes, on an Apple Silicon Mac with at least ${macs[0].h[1]} GB of unified memory, such as the ${macs[0].h[0]} (${macs[0].r.q}, ${prosTps(macs[0].r.tps)} tokens/sec). macOS lets the GPU use roughly 70-75% of unified memory, so smaller Macs can't hold it at Q4_K_M or better.`
     : `Not at Q4_K_M or better: at about ${q4.toFixed(1)} GB it is larger than the usable GPU memory of any Mac in our list (up to about ${Math.round(512 * 0.72)} GB on a 512 GB M3 Ultra).`;
+  // v4.2: third quotable Q&A per model page — "How much VRAM does X need?" (visible + JSON-LD)
+  const vramQ = `How much VRAM does ${m[0]} need?`;
+  const vramA = `With 8K context, ${m[0]} needs about ${quantRows[0][1].toFixed(1)} GB at Q8_0, ${q4.toFixed(1)} GB at Q4_K_M and ${quantRows[5][1].toFixed(1)} GB at IQ2_M (weights plus KV cache and about ${RL.OVERHEAD} GB overhead). Each extra 8K tokens of context adds about ${kv} GB.`;
   const title = `What GPU do I need to run ${m[0]}? | ${BRAND}`;
   const url = `${SITE}/${clean(modelFile(m))}`;
   const body = `<div class="wrap">${topbar("../")}
@@ -124,12 +127,13 @@ ${full.map(({ h, r }) => `<tr><td><a href="../${gpuFile(h)}">${esc(h[0])}</a></t
 </tbody></table></div>` : `<p class="meta">None of the single cards or machines in our list hold it at Q4_K_M or better.</p>`}
 ${off.length ? `<h2 class="sec">Runs with offload to system RAM (slower)</h2>
 <p class="links">${off.slice(0, 24).map(({ h, r }) => `<a href="../${gpuFile(h)}">${esc(h[0])}</a> <span class="meta">~${RL.fmtTps(r.tps)} tok/s</span>`).join(" · ")}</p>` : ""}
+<h2 class="sec">${esc(vramQ)}</h2><p>${esc(vramA)}</p>
 <h2 class="sec">${esc(macQ)}</h2><p>${esc(macA)}</p>
 <h2 class="sec">Similar-size models</h2><p class="links">${similar.map(x => `<a href="../${modelFile(x)}">${esc(x[0])}</a>`).join("")}</p>
 <h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="../${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</p>
 <p class="meta">Assumes ${DEF.ram} GB of DDR5 system RAM for offload. Estimates only; real speeds usually land within about 20%.</p>
 ${footer}</div>`;
-  return fullDoc(head({ title, desc: answer.slice(0, 300), url, ld: faq([[`What GPU do I need to run ${m[0]}?`, answer], [macQ, macA]]) }), body);
+  return fullDoc(head({ title, desc: answer.slice(0, 300), url, ld: faq([[`What GPU do I need to run ${m[0]}?`, answer], [vramQ, vramA], [macQ, macA]]) }), body);
 }
 
 
