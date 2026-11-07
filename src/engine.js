@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v4.2 · data Nov 6, 2026
+// v4.3 · data Nov 7, 2026
 (function (root) {
-  const VERSION = "v4.2";
-  const DATA_DATE = "Nov 6, 2026";
+  const VERSION = "v4.3";
+  const DATA_DATE = "Nov 7, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -14,7 +14,7 @@
       ["RTX 4060 Ti 8GB", 8, 288, "d"], ["RTX 4060", 8, 272, "d"],
       ["RTX 3090 Ti", 24, 1008, "d"], ["RTX 3090", 24, 936, "d"], ["RTX 3080 Ti", 12, 912, "d"], ["RTX 3080 12GB", 12, 912, "d"],
       ["RTX 3080 10GB", 10, 760, "d"], ["RTX 3070", 8, 448, "d"], ["RTX 3060 Ti", 8, 448, "d"], ["RTX 3060 12GB", 12, 360, "d"],
-      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["RTX PRO 5000 Blackwell 72GB", 72, 1344, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
+      ["RTX 2080 Ti", 11, 616, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["RTX PRO 5000 Blackwell 72GB", 72, 1344, "d"], ["RTX PRO 5500 Blackwell", 84, 1398, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
       ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 16GB", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
@@ -75,7 +75,8 @@
     ["Mistral Large 4", 1050, 52, 0.7, "MoE · vision", "Mistral AI, weights Oct 29, 2026; 1.05T total, 52B active (per Mistral docs and the A52B checkpoint), 1M context, Mistral open-weight license"],
     ["Kimi K3", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Jul 2026; 2.8T total, 104B active, hybrid KDA/MLA attention, 1M context, Kimi K3 License; needs a multi-GPU server"],
     ["Kimi K3.1 Pro", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Nov 2026; post-trained Kimi K3 (2.8T total, 104B active), 1M context, Kimi K3.1 Pro License; needs a multi-GPU server"],
-    ["Tencent Hy4", 770, 49, 0.8, "MoE · vision", "Tencent, full open weights Nov 4, 2026 (preview Aug 28); 770B total, 49B active, vision and computer use, 1M context; needs a multi-GPU server"]
+    ["Tencent Hy4", 770, 49, 0.8, "MoE · vision", "Tencent, full open weights Nov 4, 2026 (preview Aug 28); 770B total, 49B active, vision and computer use, 1M context; needs a multi-GPU server"],
+    ["Ripple-65B Preview", 65, 65, 1.0, "coding · agentic", "Ricursive Intelligence, Nov 4, 2026; dense, Apache 2.0, hybrid sliding-window/global attention, 1M context"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

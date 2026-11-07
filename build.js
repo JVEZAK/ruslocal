@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.2
+// RunsLocal static site builder — v4.3
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -252,9 +252,10 @@ ${list.map(t => `<tr data-gpu="${t.via ? "NAIMC" : t.gpu}"><td><a href="${rel}${
 }
 const toolsFaq = [
   ["What is the easiest way to run an AI model locally?", "For most people, a desktop app like LM Studio or Jan, or Ollama if you are comfortable with one command in a terminal. All three are free and run on Windows, macOS and Linux."],
-  ["What is the best local AI tool for AMD GPUs?", "LM Studio, Jan, llama.cpp, Ollama and LocalAI all support AMD GPUs. On Linux servers, vLLM and SGLang also support AMD."],
+  // v4.3: AMD and coding answers are generated from TOOLS so they stay current as the directory grows
+  ["What is the best local AI tool for AMD GPUs?", `${listJoin(TOOLS.filter(t => !t.via && t.gpu.includes("A") && !["vLLM", "SGLang"].includes(t.name)).map(t => t.name))} all run models on AMD GPUs; LM Studio and Jan are the easiest to start with. On Linux servers, vLLM and SGLang also support AMD.`],
   ["What is the fastest way to run models on a Mac?", "MLX LM, Apple's framework for M-series chips, is usually fastest. LM Studio can use MLX too, and Ollama and llama.cpp use Apple's Metal GPU support."],
-  ["Can I use a local model for coding?", "Yes. Continue, Cline, Aider and OpenCode can all connect to a local engine like Ollama or LM Studio instead of a paid API. Agent-style coding works best with a capable model, roughly 24B parameters or more."]
+  ["Can I use a local model for coding?", `Yes. ${listJoin(TOOLS.filter(t => t.cat === "coding").map(t => t.name))} can all connect to a local engine like Ollama or LM Studio instead of a paid API. Agent-style coding works best with a capable model, roughly 24B parameters or more.`]
 ];
 function toolsIndex() {
   const url = `${SITE}/tools/`;
