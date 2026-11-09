@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.4
+// RunsLocal static site builder — v4.5
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -262,7 +262,7 @@ function toolsIndex() {
   const body = `<div class="wrap">${topbar("../")}
 <h1>Local AI tools</h1>
 <p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
-<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}</p>
+<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a></p>
 <div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
 ${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
 <div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
@@ -292,7 +292,7 @@ function toolPage(t) {
 <h2 class="sec">Which models can you run with ${esc(t.name)}?</h2>
 <p class="meta">That depends on your graphics card's memory, not the app. ${hw.length ? "Pick your hardware:" : `<a href="../index.html">Check your GPU</a> to see which models fit.`}</p>
 ${hw.length ? `<p class="links">${hw.map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</p>` : ""}
-${same.length ? `<h2 class="sec">Similar tools</h2><p class="links">${same.map(x => `<a href="${RL.slug(x.name)}.html">${esc(x.name)}</a>`).join("")}</p>` : ""}
+${same.length ? `<h2 class="sec">Similar tools</h2><p class="links">${same.map(x => `<a href="${RL.slug(x.name)}.html">${esc(x.name)}</a>`).join("")}${t.cat === "coding" ? `<a href="for-coding.html">Best local coding agents</a>` : ""}</p>` : ""}
 ${footer}</div>`;
   return fullDoc(head({ title: `${t.name}: local AI ${({ apps: "app", engines: "engine", ui: "interface", coding: "coding tool" })[t.cat]}, GPU support and requirements | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is ${t.name} and which GPUs does it support?`, answer]]) }), body);
 }
@@ -348,6 +348,31 @@ ${front.length ? `<h2 class="sec">Chat interfaces and coding agents for ${esc(la
 <h2 class="sec">By GPU or system</h2><p class="links">${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}${OPAGES.filter(x => x !== o).map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI apps for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best app to run AI models locally on ${label}?`, answer]]) }), body);
+}
+
+// ---------- Best local AI coding agents (v4.5) ----------
+// Direct answer for "best local coding agent", paired with the largest coding model per common GPU.
+const codingFile = "tools/for-coding.html";
+const CODE_REF = ["RTX 4060 Ti 16GB", "RTX 4090", "RTX 5090"];
+function codingPage() {
+  const list = TOOLS.filter(t => t.cat === "coding");
+  const url = `${SITE}/${clean(codingFile)}`;
+  const pairs = CODE_REF.map(n => gpus.find(h => h[0] === n)).filter(Boolean).map(h => {
+    const fit = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu" && /coding/.test(x.m[4])).sort((a, b) => b.m[1] - a.m[1])[0];
+    return { h, fit };
+  }).filter(p => p.fit);
+  let answer = `${list.length} free, open-source coding agents can use a model running on your own GPU instead of a paid API: ${listJoin(list.map(t => t.name))}. They connect to a local engine such as Ollama, LM Studio or llama.cpp, and run on Windows, macOS and Linux.`;
+  if (pairs.length) answer += ` The model matters more than the agent: ${pairs.map(p => `on ${aGb(p.h[1])} GPU (${p.h[0]}) the largest coding model that fits is ${p.fit.m[0]}`).join("; ")}.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / For coding</p>
+<h1>Best local AI coding agents</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which coding models your GPU can run</a>
+<h2 class="sec">Coding agents that work with local models</h2>${toolsTable(list, "../")}
+<h2 class="sec">Engines to run the model</h2>${toolsTable(TOOLS.filter(t => !t.via && t.level === "Beginner"), "../")}
+<h2 class="sec">Best coding model by GPU</h2><p class="links">${gpus.filter(h => h[3] === "d").slice(0, 12).map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}<a href="../best/index.html">Best models by memory size</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local AI coding agents that run with your own GPU (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the best coding agent for local models?", answer]]) }), body);
 }
 
 // ---------- All models index (v3.5) ----------
@@ -456,6 +481,7 @@ function llmsTxt() {
   lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
   VPAGES.forEach(v => lines.push(`- [Best local AI apps for ${v[2]}](${SITE}/${clean(vendorFile(v))})`));
   OPAGES.forEach(o => lines.push(`- [Best local AI apps for ${o[2]}](${SITE}/${clean(osFile(o))})`));
+  lines.push(`- [Best local AI coding agents](${SITE}/${clean(codingFile)})`);
   TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
@@ -477,10 +503,11 @@ write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
 OPAGES.forEach(o => { const f = osFile(o); write("dist", f, osPage(o)); pages.push(f); });
+write("dist", codingFile, codingPage()); pages.push(codingFile);
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 1 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 2 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
