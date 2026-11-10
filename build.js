@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.5
+// RunsLocal static site builder — v4.6
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -262,7 +262,7 @@ function toolsIndex() {
   const body = `<div class="wrap">${topbar("../")}
 <h1>Local AI tools</h1>
 <p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
-<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a></p>
+<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a><a href="open-source.html">Open-source tools</a></p>
 <div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
 ${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
 <div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
@@ -348,6 +348,27 @@ ${front.length ? `<h2 class="sec">Chat interfaces and coding agents for ${esc(la
 <h2 class="sec">By GPU or system</h2><p class="links">${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}${OPAGES.filter(x => x !== o).map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI apps for ${label} (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best app to run AI models locally on ${label}?`, answer]]) }), body);
+}
+
+// ---------- Open-source local AI tools (v4.6) ----------
+// Direct answer for "open source alternative to LM Studio" / "best open-source local AI app".
+const osrcFile = "tools/open-source.html";
+function openSourcePage() {
+  const list = TOOLS.filter(t => t.open), closed = TOOLS.filter(t => !t.open);
+  const easyApps = list.filter(t => t.cat === "apps" && t.level === "Beginner");
+  const url = `${SITE}/${clean(osrcFile)}`;
+  let answer = `${list.length} of the ${TOOLS.length} local AI tools in the RunsLocal directory are open source: ${listJoin(list.map(t => t.name))}.`;
+  if (easyApps.length) answer += ` The easiest open-source desktop apps are ${listJoin(easyApps.map(t => t.name))}; Ollama and llama.cpp are the open-source engines most other tools build on.`;
+  if (closed.length) answer += ` ${listJoin(closed.map(t => t.name))} ${closed.length === 1 ? "is" : "are"} free to use but not open source.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / Open source</p>
+<h1>Best open-source local AI apps</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which models your GPU can run</a>
+${CATEGORIES.map(([c, label]) => { const l = list.filter(t => t.cat === c); return l.length ? `<h2 class="sec">${esc(label)}</h2>${toolsTable(l, "../")}` : ""; }).join("\n")}
+<h2 class="sec">More guides</h2><p class="links">${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}${OPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}<a href="for-coding.html">Coding agents</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best open-source local AI apps (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the best open-source app to run AI models locally?", answer], ["Is LM Studio open source?", closed.some(t => t.name === "LM Studio") ? "No. LM Studio is free to use but not open source. Open-source alternatives include " + listJoin(easyApps.map(t => t.name)) + "." : "Yes."]]) }), body);
 }
 
 // ---------- Best local AI coding agents (v4.5) ----------
@@ -482,6 +503,7 @@ function llmsTxt() {
   VPAGES.forEach(v => lines.push(`- [Best local AI apps for ${v[2]}](${SITE}/${clean(vendorFile(v))})`));
   OPAGES.forEach(o => lines.push(`- [Best local AI apps for ${o[2]}](${SITE}/${clean(osFile(o))})`));
   lines.push(`- [Best local AI coding agents](${SITE}/${clean(codingFile)})`);
+  lines.push(`- [Best open-source local AI apps](${SITE}/${clean(osrcFile)})`);
   TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
@@ -504,6 +526,7 @@ TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
 OPAGES.forEach(o => { const f = osFile(o); write("dist", f, osPage(o)); pages.push(f); });
 write("dist", codingFile, codingPage()); pages.push(codingFile);
+write("dist", osrcFile, openSourcePage()); pages.push(osrcFile);
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
