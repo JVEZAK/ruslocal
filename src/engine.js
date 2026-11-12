@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v4.7 · data Nov 11, 2026
+// v4.8 · data Nov 12, 2026
 (function (root) {
-  const VERSION = "v4.7";
-  const DATA_DATE = "Nov 11, 2026";
+  const VERSION = "v4.8";
+  const DATA_DATE = "Nov 12, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -77,7 +77,9 @@
     ["Kimi K3.1 Pro", 2800, 104, 0.3, "MoE · vision", "Moonshot AI, weights Nov 2026; post-trained Kimi K3 (2.8T total, 104B active), 1M context, Kimi K3.1 Pro License; needs a multi-GPU server"],
     ["Tencent Hy4", 770, 49, 0.8, "MoE · vision", "Tencent, full open weights Nov 4, 2026 (preview Aug 28); 770B total, 49B active, vision and computer use, 1M context; needs a multi-GPU server"],
     ["Ripple-65B Preview", 65, 65, 1.0, "coding · agentic", "Ricursive Intelligence, Nov 4, 2026; dense, Apache 2.0, hybrid sliding-window/global attention, 1M context"],
-    ["LongCat-2.5", 1600, 48, 0.8, "MoE · vision", "Meituan, full open weights Nov 9, 2026; ~1.6T total, ~48B active, native multimodal agent model, MIT license; needs a multi-GPU server"]
+    ["LongCat-2.5", 1600, 48, 0.8, "MoE · vision", "Meituan, full open weights Nov 9, 2026; ~1.6T total, ~48B active, native multimodal agent model, MIT license; needs a multi-GPU server"],
+    ["Inkling-Small 276B-A12B", 276, 12, 0.5, "MoE · vision", "Thinking Machines Lab, Jul 30, 2026; 276B total, 12B active, hybrid local/global attention, 1M context, Apache 2.0"],
+    ["Inkling 975B-A41B", 975, 41, 1.0, "MoE · vision", "Thinking Machines Lab, Jul 15, 2026; 975B total, 41B active, hybrid local/global attention, 1M context, Apache 2.0; needs a multi-GPU server"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];

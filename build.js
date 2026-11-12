@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.7
+// RunsLocal static site builder — v4.8
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -172,7 +172,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB unified memory (v2.6) ----------
 // Macs, DGX Spark and Ryzen AI Max share one memory pool; ~72% of it is usable for a model.
-const UTIERS = [[16, "M5 16GB"], [24, "M4 Pro 24GB"], [32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [96, "M3 Ultra 96GB"], [128, "M4 Max 128GB"], [256, "M3 Ultra 256GB"]]; // v4.7: 256 GB unified (M3 Ultra) for big MoE models; v3.9: 96 GB unified (M3 Ultra)
+const UTIERS = [[16, "M5 16GB"], [24, "M4 Pro 24GB"], [32, "M5 32GB"], [36, "M5 Max 36GB"], [48, "M4 Pro 48GB"], [64, "M4 Max 64GB"], [96, "M3 Ultra 96GB"], [128, "M4 Max 128GB"], [256, "M3 Ultra 256GB"], [512, "M3 Ultra 512GB"]]; // v4.8: 512 GB unified (M3 Ultra); v4.7: 256 GB unified (M3 Ultra) for big MoE models; v3.9: 96 GB unified (M3 Ultra)
 const uBestFile = gb => `best/${gb}gb-unified-memory.html`;
 function uBestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
@@ -228,7 +228,7 @@ ${table(u)}
 <p class="meta">Assumes ${DEF.ram} GB of system RAM and 8K context. Unified memory counts ~72% of RAM as usable; discrete cards count VRAM minus 0.6 GB.</p>
 <p class="links"><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
 ${footer}</div>`;
-  return fullDoc(head({ title: `Best local AI models by VRAM: 8 GB to 128 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the biggest AI model I can run locally for my VRAM?", answer]]) }), body);
+  return fullDoc(head({ title: `Best local AI models by VRAM: 8 GB to 512 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the biggest AI model I can run locally for my VRAM?", answer]]) }), body);
 }
 
 // ---------- Local AI tools directory ----------
