@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.8
+// RunsLocal static site builder — v4.9
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -413,6 +413,7 @@ function modelsIndex() {
 <h1>All local AI models: how much memory each one needs</h1>
 <p class="answer">${esc(answer)}</p>
 <a class="cta" href="../index.html">Check which ones your hardware runs</a>
+<p class="links"><a href="new.html">Newest models first</a></p>
 <div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Parameters</th><th>Q4_K_M memory</th><th>Smallest hardware that runs it on the GPU at Q4_K_M or better</th></tr></thead><tbody>
 ${rows.map(({ m, q4, fit }) => `<tr><td><a href="${RL.slug(m[0])}.html">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td class="num">${m[1]}B${m[1] !== m[2] ? ` (${m[2]}B active)` : ""}</td><td class="num">${q4.toFixed(1)} GB</td><td>${esc(fit)}</td></tr>`).join("\n")}
 </tbody></table></div>
@@ -420,6 +421,35 @@ ${rows.map(({ m, q4, fit }) => `<tr><td><a href="${RL.slug(m[0])}.html">${esc(m[
 <h2 class="sec">Best models by VRAM</h2><p class="links">${TIERS.map(([gb]) => `<a href="../${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="../${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `All local AI models and the VRAM they need (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["How much memory do popular local AI models need?", answer]]) }), body);
+}
+
+// ---------- Newest models page (v4.9) ----------
+// "What new AI models can I run locally?" — the most recently added models (MODELS is appended in release order), newest first.
+const newFile = "model/new.html";
+const NEW_N = 12;
+function smallestFit(m) {
+  const q4 = m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD;
+  const card = gpus.filter(h => h[3] === "d" && RL.evaluate(m, h, DEF.ram, DEF.ramBw, DEF.ctx).tier === "gpu").sort((a, b) => a[1] - b[1] || a[2] - b[2])[0];
+  const uni = gpus.filter(h => h[3] === "u" && RL.evaluate(m, h, DEF.ram, DEF.ramBw, DEF.ctx).tier === "gpu").sort((a, b) => a[1] - b[1] || a[2] - b[2])[0];
+  return { q4, card, uni, fit: card ? `${card[1]} GB GPU (${card[0]})` : uni ? `${uni[1]} GB unified (${uni[0]})` : "Multi-GPU server" };
+}
+function newModelsPage() {
+  const url = `${SITE}/model/new`;
+  const rows = RL.MODELS.slice(-NEW_N).reverse().map(m => ({ m, ...smallestFit(m) }));
+  const onCard = rows.filter(x => x.card), onMac = rows.filter(x => !x.card && x.uni), server = rows.filter(x => !x.card && !x.uni);
+  const answer = `The open-weight AI models most recently added to RunsLocal (updated ${RL.DATA_DATE}) are ${listJoin(rows.slice(0, 4).map(x => x.m[0]))}. Of the ${rows.length} latest, ${onCard.length ? `${onCard.length} run on a single consumer or workstation graphics card (${listJoin(onCard.map(x => x.m[0]))})` : "none fit a single graphics card"}, ${onMac.length} need a big unified-memory Mac or PC, and ${server.length} need a multi-GPU server at Q4_K_M with 8K context.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / <a href="index.html">All models</a> / Newest</p>
+<h1>New local AI models: what you need to run each one</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which ones your hardware runs</a>
+<div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Parameters</th><th>Q4_K_M memory</th><th>Smallest hardware that runs it on the GPU</th></tr></thead><tbody>
+${rows.map(({ m, q4, fit }) => `<tr><td><a href="${RL.slug(m[0])}.html">${esc(m[0])}</a><br><span class="meta">${esc(m[5])}</span></td><td class="num">${m[1]}B${m[1] !== m[2] ? ` (${m[2]}B active)` : ""}</td><td class="num">${q4.toFixed(1)} GB</td><td>${esc(fit)}</td></tr>`).join("\n")}
+</tbody></table></div>
+<p class="meta">Newest first, by when RunsLocal added the model. Memory = parameters x 4.85 bits / 8 + KV cache for 8K context + 0.5 GB overhead.</p>
+<h2 class="sec">More</h2><p class="links"><a href="index.html">All models</a><a href="../best/index.html">Best models by VRAM</a><a href="../tools/index.html">Local AI apps</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `New local AI models (${RL.DATA_DATE}): VRAM needed for each | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What new AI models can I run locally?", answer]]) }), body);
 }
 
 // ---------- All GPUs index (v3.6) ----------
@@ -451,7 +481,7 @@ function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2><a href="gpu/index.html" style="color:inherit">What can my GPU run?</a></h2>${byGroup}</section>
 <section class="browse"><h2><a href="best/index.html" style="color:inherit">Best models by VRAM</a></h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
-<section class="browse"><h2><a href="model/index.html" style="color:inherit">What do I need to run a model?</a></h2><div class="links">${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
+<section class="browse"><h2><a href="model/index.html" style="color:inherit">What do I need to run a model?</a></h2><div class="links"><a href="${newFile}"><b>Newest models</b></a>${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
 function homeBody() {
@@ -498,6 +528,7 @@ function llmsTxt() {
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
   UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
   lines.push("", `## Models ([all models with memory needed](${SITE}/model/))`);
+  lines.push(`- [New local AI models, newest first](${SITE}/${clean(newFile)}): ${RL.MODELS.slice(-NEW_N).reverse().slice(0, 5).map(m => m[0]).join(", ")}`);
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
   lines.push("", `## Local AI tools ([directory](${SITE}/tools/))`);
   VPAGES.forEach(v => lines.push(`- [Best local AI apps for ${v[2]}](${SITE}/${clean(vendorFile(v))})`));
@@ -517,6 +548,7 @@ write("artifact", "index.html", homeHead() + "\n" + homeBody());
 gpus.forEach(h => { const f = gpuFile(h), html = gpuPage(h); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 RL.MODELS.forEach(m => { const f = modelFile(m), html = modelPage(m); write("dist", f, html); write("artifact", f, html); pages.push(f); });
 write("dist", "model/index.html", modelsIndex()); pages.push("model/");
+write("dist", newFile, newModelsPage()); pages.push(newFile);
 write("dist", "gpu/index.html", gpusIndex()); pages.push("gpu/");
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
 UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });

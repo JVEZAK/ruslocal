@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v4.8 · data Nov 12, 2026
+// v4.9 · data Nov 13, 2026
 (function (root) {
-  const VERSION = "v4.8";
-  const DATA_DATE = "Nov 12, 2026";
+  const VERSION = "v4.9";
+  const DATA_DATE = "Nov 13, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -79,7 +79,8 @@
     ["Ripple-65B Preview", 65, 65, 1.0, "coding · agentic", "Ricursive Intelligence, Nov 4, 2026; dense, Apache 2.0, hybrid sliding-window/global attention, 1M context"],
     ["LongCat-2.5", 1600, 48, 0.8, "MoE · vision", "Meituan, full open weights Nov 9, 2026; ~1.6T total, ~48B active, native multimodal agent model, MIT license; needs a multi-GPU server"],
     ["Inkling-Small 276B-A12B", 276, 12, 0.5, "MoE · vision", "Thinking Machines Lab, Jul 30, 2026; 276B total, 12B active, hybrid local/global attention, 1M context, Apache 2.0"],
-    ["Inkling 975B-A41B", 975, 41, 1.0, "MoE · vision", "Thinking Machines Lab, Jul 15, 2026; 975B total, 41B active, hybrid local/global attention, 1M context, Apache 2.0; needs a multi-GPU server"]
+    ["Inkling 975B-A41B", 975, 41, 1.0, "MoE · vision", "Thinking Machines Lab, Jul 15, 2026; 975B total, 41B active, hybrid local/global attention, 1M context, Apache 2.0; needs a multi-GPU server"],
+    ["Inkling 2 Small 594B-A17B", 594, 17, 0.6, "MoE · vision", "Thinking Machines Lab, announced Nov 5, 2026, weights Nov 12, 2026; 594B total, 17B active, image input, Apache 2.0; fits a 512 GB Mac at Q4"]
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
