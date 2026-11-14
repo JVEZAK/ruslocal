@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v4.9
+// RunsLocal static site builder — v5.0
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -262,7 +262,7 @@ function toolsIndex() {
   const body = `<div class="wrap">${topbar("../")}
 <h1>Local AI tools</h1>
 <p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
-<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a><a href="open-source.html">Open-source tools</a></p>
+<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a><a href="open-source.html">Open-source tools</a><a href="for-beginners.html">Easiest apps for beginners</a></p>
 <div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
 ${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
 <div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
@@ -366,9 +366,35 @@ function openSourcePage() {
 <p class="answer">${esc(answer)}</p>
 <a class="cta" href="../index.html">Check which models your GPU can run</a>
 ${CATEGORIES.map(([c, label]) => { const l = list.filter(t => t.cat === c); return l.length ? `<h2 class="sec">${esc(label)}</h2>${toolsTable(l, "../")}` : ""; }).join("\n")}
-<h2 class="sec">More guides</h2><p class="links">${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}${OPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}<a href="for-coding.html">Coding agents</a></p>
+<h2 class="sec">More guides</h2><p class="links">${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}${OPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}<a href="for-coding.html">Coding agents</a><a href="for-beginners.html">For beginners</a></p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best open-source local AI apps (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the best open-source app to run AI models locally?", answer], ["Is LM Studio open source?", closed.some(t => t.name === "LM Studio") ? "No. LM Studio is free to use but not open source. Open-source alternatives include " + listJoin(easyApps.map(t => t.name)) + "." : "Yes."]]) }), body);
+}
+
+// ---------- Easiest local AI apps for beginners (v5.0) ----------
+// Direct answer for "easiest way to run AI locally" / "best local AI app for beginners", with a starter model per common setup.
+const beginFile = "tools/for-beginners.html";
+const BEGIN_REF = ["RTX 4060", "RTX 3060 12GB", "M4 16GB"];
+function beginnersPage() {
+  const list = TOOLS.filter(t => t.level === "Beginner");
+  const apps = list.filter(t => t.cat === "apps"), eng = list.filter(t => t.cat !== "apps");
+  const url = `${SITE}/${clean(beginFile)}`;
+  const picks = BEGIN_REF.map(n => gpus.find(h => h[0] === n)).filter(Boolean).map(h => {
+    const fit = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu" && x.r.tps >= 10).sort((a, b) => b.m[2] - a.m[2] || b.m[1] - a.m[1])[0];
+    return { h, fit };
+  }).filter(p => p.fit);
+  let answer = `The easiest way to run AI models on your own computer is a free desktop app: ${listJoin(apps.map(t => t.name))} let you download a model and chat in a few clicks, with no command line, on Windows, macOS and Linux.`;
+  if (eng.length) answer += ` ${listJoin(eng.map(t => t.name))} ${eng.length === 1 ? "is" : "are"} the easiest ${eng.length === 1 ? "engine" : "engines"} if you are comfortable typing one command.`;
+  if (picks.length) answer += ` A good first model: ${picks.map(p => `${p.fit.m[0]} on ${aGb(p.h[1])} ${p.h[3] === "u" ? "Mac" : "GPU"} (${p.h[0]}, about ${RL.fmtTps(p.fit.r.tps)} tokens/s)`).join("; ")}.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / For beginners</p>
+<h1>Easiest local AI apps for beginners</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which models your computer can run</a>
+<h2 class="sec">Beginner-friendly apps and engines</h2>${toolsTable(list, "../")}
+<h2 class="sec">Next steps</h2><p class="links"><a href="index.html">All local AI tools</a><a href="open-source.html">Open-source tools</a>${VPAGES.map(x => `<a href="for-${x[1]}.html">${esc(x[2])}</a>`).join("")}<a href="../best/index.html">Best models by memory size</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Easiest local AI apps for beginners (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the easiest way to run AI models locally?", answer], ["Do I need to use the command line to run a local AI model?", `No. ${listJoin(apps.map(t => t.name))} are desktop apps with a built-in model browser and chat window.`]]) }), body);
 }
 
 // ---------- Best local AI coding agents (v4.5) ----------
@@ -535,6 +561,7 @@ function llmsTxt() {
   OPAGES.forEach(o => lines.push(`- [Best local AI apps for ${o[2]}](${SITE}/${clean(osFile(o))})`));
   lines.push(`- [Best local AI coding agents](${SITE}/${clean(codingFile)})`);
   lines.push(`- [Best open-source local AI apps](${SITE}/${clean(osrcFile)})`);
+  lines.push(`- [Easiest local AI apps for beginners](${SITE}/${clean(beginFile)})`);
   TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
@@ -559,10 +586,11 @@ VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); 
 OPAGES.forEach(o => { const f = osFile(o); write("dist", f, osPage(o)); pages.push(f); });
 write("dist", codingFile, codingPage()); pages.push(codingFile);
 write("dist", osrcFile, openSourcePage()); pages.push(osrcFile);
+write("dist", beginFile, beginnersPage()); pages.push(beginFile);
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 2 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
