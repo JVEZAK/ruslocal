@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.0
+// RunsLocal static site builder — v5.1
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -164,7 +164,7 @@ ${full.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><
 </tbody></table></div>
 ${off.length ? `<h2 class="sec">Bigger models that run with offload</h2><p class="links">${off.map(({ m, r }) => `<a href="../${modelFile(m)}">${esc(m[0])}</a> <span class="meta">~${RL.fmtTps(r.tps)} tok/s</span>`).join(" · ")}</p>` : ""}
 ${cards.length ? `<h2 class="sec">${gb} GB graphics cards</h2><p class="links">${cards.map(c => `<a href="../${gpuFile(c)}">${esc(c[0])}</a>`).join("")}</p>` : ""}
-<h2 class="sec">Other VRAM sizes</h2><p class="links">${TIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB</a>`).join("")}</p>
+<h2 class="sec">Other VRAM sizes</h2><p class="links">${TIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB</a>`).join("")}<a href="no-gpu.html">No GPU</a></p>
 <p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Cards with the same VRAM but different bandwidth will be faster or slower in proportion.</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models for ${aGb(gb)} GPU (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${aGb(gb)} GPU?`, answer]]) }), body);
@@ -226,9 +226,45 @@ ${table(d)}
 <h2 class="sec">Macs and unified-memory PCs</h2>
 ${table(u)}
 <p class="meta">Assumes ${DEF.ram} GB of system RAM and 8K context. Unified memory counts ~72% of RAM as usable; discrete cards count VRAM minus 0.6 GB.</p>
-<p class="links"><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
+<p class="links"><a href="no-gpu.html">No GPU (CPU only)</a><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models by VRAM: 8 GB to 512 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the biggest AI model I can run locally for my VRAM?", answer]]) }), body);
+}
+
+// ---------- Best models with no GPU (CPU only, system RAM) (v5.1) ----------
+const cpuFile = "best/no-gpu.html";
+const CPU_RAM = [16, 32, 64];
+function cpuPage() {
+  const cpu = RL.flat.find(x => x[3] === "c");
+  const url = `${SITE}/${clean(cpuFile)}`;
+  const per = CPU_RAM.map(ram => {
+    const fit = RL.rank(cpu, ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "cpu");
+    const usable = fit.filter(x => x.r.tps >= 5).sort((a, b) => b.m[1] - a.m[1]);
+    return { ram, fit, usable, pool: Math.max(0, ram - 6) * 0.9 };
+  });
+  const p32 = per.find(p => p.ram === 32);
+  const fast = p32.usable.slice(0, 3);
+  let answer = `Yes, you can run a local AI model without a GPU, using your CPU and system RAM. With ${DEF.ram} GB of dual-channel DDR5 (~${DEF.ramBw} GB/s), ${p32.fit.length} of ${RL.MODELS.length} popular open models fit at Q4_K_M or better (8K context).`;
+  if (fast.length) answer += ` The best that still run at a usable 5+ tokens/sec are ${fast.map(x => `${x.m[0]} (${x.r.q}, ${prosTps(x.r.tps)} tok/s)`).join(", ")}.`;
+  answer += ` Mixture-of-experts models with few active parameters are the best fit for CPU-only PCs, because speed depends on memory bandwidth, not core count.`;
+  const sections = per.map(p => `<h2 class="sec">${p.ram} GB of RAM (about ${p.pool.toFixed(0)} GB free for a model)</h2>
+${p.fit.length ? `<div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Best quant</th><th>Memory needed</th><th>Est. speed</th></tr></thead><tbody>
+${p.fit.slice(0, 12).map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${RL.fmtTps(r.tps)} tok/s · ${RL.speedWord(r.tps)}</td></tr>`).join("\n")}
+</tbody></table></div>` : `<p>Only very small models fit.</p>`}`).join("\n");
+  const qa = [["Can I run a local LLM without a GPU?", answer],
+    ["How much RAM do I need to run AI locally without a GPU?", `16 GB of RAM runs small models such as ${per[0].fit.slice(0, 2).map(x => x.m[0]).join(" and ") || "3B-class models"}. 32 GB runs ${p32.fit.length} models including ${p32.usable.slice(0, 2).map(x => x.m[0]).join(" and ")}. 64 GB fits ${per[2].fit.length} models, but dense models above ~30B run slowly on a CPU.`]];
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / <a href="index.html">Best models</a> / No GPU</p>
+<h1>Best local AI models with no GPU (CPU only)</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check your exact RAM and CPU</a>
+${sections}
+<h2 class="sec">${esc(qa[1][0])}</h2><p>${esc(qa[1][1])}</p>
+<h2 class="sec">Apps that run on CPU only</h2><p class="links">${TOOLS.filter(t => t.gpu && t.gpu.includes("C") && t.level === "Beginner").map(t => `<a href="../${toolFile(t)}">${esc(t.name)}</a>`).join("")}<a href="../tools/for-beginners.html">Easiest apps for beginners</a></p>
+<h2 class="sec">Have a GPU or Mac?</h2><p class="links">${TIERS.slice(0, 6).map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB GPU</a>`).join("")}${UTIERS.slice(0, 4).map(t => `<a href="${t[0]}gb-unified-memory.html">${t[0]} GB Mac</a>`).join("")}<a href="index.html">All memory sizes</a></p>
+<p class="meta">Speeds assume dual-channel DDR5 at ~${DEF.ramBw} GB/s, with 6 GB of RAM kept for the OS. Older DDR4 PCs (~40-50 GB/s) run about a third slower; prompt processing on a CPU is also much slower than on a GPU.</p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local AI models with no GPU: CPU-only LLMs for 16-64 GB RAM (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq(qa) }), body);
 }
 
 // ---------- Local AI tools directory ----------
@@ -506,7 +542,7 @@ ${footer}</div>`;
 function browseLinks() {
   const byGroup = RL.HW.filter(([g]) => g !== "No GPU").map(([g, list]) => `<div class="grp">${esc(g)}</div><div class="links">${list.map(h => `<a href="${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</div>`).join("");
   return `<section class="browse"><h2><a href="gpu/index.html" style="color:inherit">What can my GPU run?</a></h2>${byGroup}</section>
-<section class="browse"><h2><a href="best/index.html" style="color:inherit">Best models by VRAM</a></h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}</div></section>
+<section class="browse"><h2><a href="best/index.html" style="color:inherit">Best models by VRAM</a></h2><div class="links">${TIERS.map(([gb]) => `<a href="${bestFile(gb)}">${gb} GB GPU</a>`).join("")}${UTIERS.map(([gb]) => `<a href="${uBestFile(gb)}">${gb} GB Mac / unified</a>`).join("")}<a href="${cpuFile}">No GPU (CPU only)</a></div></section>
 <section class="browse"><h2><a href="model/index.html" style="color:inherit">What do I need to run a model?</a></h2><div class="links"><a href="${newFile}"><b>Newest models</b></a>${RL.MODELS.map(m => `<a href="${modelFile(m)}">${esc(m[0])}</a>`).join("")}</div></section>
 <section class="browse"><h2><a href="tools/index.html" style="color:inherit">Local AI tools</a></h2><div class="links">${TOOLS.map(t => `<a href="${toolFile(t)}">${esc(t.name)}</a>`).join("")}</div></section>`;
 }
@@ -553,6 +589,7 @@ function llmsTxt() {
   lines.push("", `## Best models by VRAM size ([overview](${SITE}/best/))`);
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
   UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
+  lines.push(`- [Best local AI models with no GPU (CPU only, 16-64 GB RAM)](${SITE}/${clean(cpuFile)})`);
   lines.push("", `## Models ([all models with memory needed](${SITE}/model/))`);
   lines.push(`- [New local AI models, newest first](${SITE}/${clean(newFile)}): ${RL.MODELS.slice(-NEW_N).reverse().slice(0, 5).map(m => m[0]).join(", ")}`);
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
@@ -580,6 +617,7 @@ write("dist", "gpu/index.html", gpusIndex()); pages.push("gpu/");
 TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist", f, html); pages.push(f); });
 UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });
 write("dist", "best/index.html", bestIndex()); pages.push("best/");
+write("dist", cpuFile, cpuPage()); pages.push(cpuFile);
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
@@ -593,4 +631,4 @@ write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xm
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + no-GPU page + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
