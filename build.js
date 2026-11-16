@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.1
+// RunsLocal static site builder — v5.2
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -164,7 +164,7 @@ ${full.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><
 </tbody></table></div>
 ${off.length ? `<h2 class="sec">Bigger models that run with offload</h2><p class="links">${off.map(({ m, r }) => `<a href="../${modelFile(m)}">${esc(m[0])}</a> <span class="meta">~${RL.fmtTps(r.tps)} tok/s</span>`).join(" · ")}</p>` : ""}
 ${cards.length ? `<h2 class="sec">${gb} GB graphics cards</h2><p class="links">${cards.map(c => `<a href="../${gpuFile(c)}">${esc(c[0])}</a>`).join("")}</p>` : ""}
-<h2 class="sec">Other VRAM sizes</h2><p class="links">${TIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB</a>`).join("")}<a href="no-gpu.html">No GPU</a></p>
+<h2 class="sec">Other VRAM sizes</h2><p class="links">${TIERS.filter(t => t[0] !== gb).map(t => `<a href="${t[0]}gb-gpu.html">${t[0]} GB</a>`).join("")}<a href="no-gpu.html">No GPU</a><a href="coding.html">Best for coding</a></p>
 <p class="meta">Speeds use the ${esc(ref)} (${h[2]} GB/s). Cards with the same VRAM but different bandwidth will be faster or slower in proportion.</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models for ${aGb(gb)} GPU (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is the best local AI model for ${aGb(gb)} GPU?`, answer]]) }), body);
@@ -226,7 +226,7 @@ ${table(d)}
 <h2 class="sec">Macs and unified-memory PCs</h2>
 ${table(u)}
 <p class="meta">Assumes ${DEF.ram} GB of system RAM and 8K context. Unified memory counts ~72% of RAM as usable; discrete cards count VRAM minus 0.6 GB.</p>
-<p class="links"><a href="no-gpu.html">No GPU (CPU only)</a><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
+<p class="links"><a href="no-gpu.html">No GPU (CPU only)</a><a href="coding.html">Best coding models</a><a href="../gpu/index.html">All GPUs</a><a href="../model/index.html">All models</a><a href="../tools/index.html">Local AI tools</a></p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models by VRAM: 8 GB to 512 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the biggest AI model I can run locally for my VRAM?", answer]]) }), body);
 }
@@ -265,6 +265,40 @@ ${sections}
 <p class="meta">Speeds assume dual-channel DDR5 at ~${DEF.ramBw} GB/s, with 6 GB of RAM kept for the OS. Older DDR4 PCs (~40-50 GB/s) run about a third slower; prompt processing on a CPU is also much slower than on a GPU.</p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI models with no GPU: CPU-only LLMs for 16-64 GB RAM (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq(qa) }), body);
+}
+
+// ---------- Best local coding models by VRAM (v5.2) ----------
+// Direct answer for "best local coding model for N GB": largest coding-tagged model per memory tier.
+const codeModelsFile = "best/coding.html";
+function codeModelsPage() {
+  const url = `${SITE}/${clean(codeModelsFile)}`;
+  const isCode = m => /coding/.test(m[4]);
+  const tiers = TIERS.map(([gb, ref]) => [gb, ref, "d"]).concat(UTIERS.filter(t => [32, 64, 128].includes(t[0])).map(([gb, ref]) => [gb, ref, "u"]));
+  const per = tiers.map(([gb, ref, kind]) => {
+    const h = RL.flat.find(x => x[0] === ref);
+    const rows = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => isCode(x.m));
+    const full = rows.filter(x => x.r.tier === "gpu").sort((a, b) => b.m[1] - a.m[1]);
+    const alt = rows.filter(x => x.r.tier !== "no" && x.r.tps >= 10).sort((a, b) => b.m[1] - a.m[1]);
+    return { gb, ref, kind, h, best: full.find(x => x.r.tps >= 10) || full[0] || alt[0], fast: full.filter(x => x.m[2] < x.m[1] * 0.5).sort((a, b) => b.r.tps - a.r.tps)[0], n: full.length };
+  }).filter(p => p.best);
+  const label = p => p.kind === "u" ? `${p.gb} GB Mac` : `${p.gb} GB GPU`;
+  const say = p => `${label(p)}: ${p.best.m[0]} (${p.best.r.q}${p.best.r.tier === "gpu" ? "" : ", " + RL.TIER[p.best.r.tier][0].toLowerCase()}, ~${RL.fmtTps(p.best.r.tps)} tok/s)`;
+  const d = per.filter(p => p.kind === "d");
+  const answer = `The best local coding model for your PC is the largest coding model that fits in your VRAM at Q4_K_M or better and still runs at 10+ tokens/sec. At 8K context: ${d.map(say).join("; ")}. On a Mac: ${per.filter(p => p.kind === "u").map(say).join("; ")}. Pair it with a free coding agent such as ${listJoin(TOOLS.filter(t => t.cat === "coding").slice(0, 3).map(t => t.name))}.`;
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="../index.html">Home</a> / <a href="index.html">Best models</a> / Coding</p>
+<h1>Best local coding models for your GPU or Mac</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check your exact card</a>
+<h2 class="sec">Best coding model by memory size</h2>
+<div class="tablewrap"><table class="ref"><thead><tr><th>Memory</th><th>Best coding model</th><th>Quant · memory</th><th>Est. speed</th><th>Fastest MoE coder</th></tr></thead><tbody>
+${per.map(p => `<tr><td><a href="${p.kind === "u" ? p.gb + "gb-unified-memory.html" : p.gb + "gb-gpu.html"}">${label(p)}</a><br><span class="meta">${esc(p.ref)}</span></td><td><a href="../${modelFile(p.best.m)}">${esc(p.best.m[0])}</a></td><td class="num">${p.best.r.q} · ${p.best.r.need.toFixed(1)} GB</td><td class="num">${RL.fmtTps(p.best.r.tps)} tok/s</td><td>${p.fast && p.fast.m !== p.best.m ? `<a href="../${modelFile(p.fast.m)}">${esc(p.fast.m[0])}</a> ~${RL.fmtTps(p.fast.r.tps)} tok/s` : "—"}</td></tr>`).join("\n")}
+</tbody></table></div>
+<h2 class="sec">All coding models</h2><p class="links">${RL.MODELS.filter(isCode).map(m => `<a href="../${modelFile(m)}">${esc(m[0])}</a>`).join("")}</p>
+<h2 class="sec">Coding agents that use local models</h2><p class="links">${TOOLS.filter(t => t.cat === "coding").map(t => `<a href="../${toolFile(t)}">${esc(t.name)}</a>`).join("")}<a href="../${codingFile}">Compare coding agents</a></p>
+<p class="meta">Agentic coding needs long context; at 32K+ context the KV cache grows, so pick one size smaller or check your card in the tool. Speeds assume ${DEF.ram} GB system RAM.</p>
+${footer}</div>`;
+  return fullDoc(head({ title: `Best local coding models by VRAM: 8 GB to 96 GB (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the best local coding model for my GPU?", answer]].concat(d.filter(p => [8, 12, 16, 24].includes(p.gb)).map(p => [`What is the best coding model for ${aGb(p.gb)} GPU?`, `${p.best.m[0]} at ${p.best.r.q} (about ${p.best.r.need.toFixed(1)} GB, ~${RL.fmtTps(p.best.r.tps)} tokens/sec on an ${p.ref}).`]))) }), body);
 }
 
 // ---------- Local AI tools directory ----------
@@ -453,7 +487,7 @@ function codingPage() {
 <a class="cta" href="../index.html">Check which coding models your GPU can run</a>
 <h2 class="sec">Coding agents that work with local models</h2>${toolsTable(list, "../")}
 <h2 class="sec">Engines to run the model</h2>${toolsTable(TOOLS.filter(t => !t.via && t.level === "Beginner"), "../")}
-<h2 class="sec">Best coding model by GPU</h2><p class="links">${gpus.filter(h => h[3] === "d").slice(0, 12).map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}<a href="../best/index.html">Best models by memory size</a></p>
+<h2 class="sec">Best coding model by GPU</h2><p class="links">${gpus.filter(h => h[3] === "d").slice(0, 12).map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}<a href="../best/index.html">Best models by memory size</a><a href="../${codeModelsFile}">Best coding models by VRAM</a></p>
 ${footer}</div>`;
   return fullDoc(head({ title: `Best local AI coding agents that run with your own GPU (${RL.DATA_DATE.replace(/^\w+ \d+, /, "")}) | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([["What is the best coding agent for local models?", answer]]) }), body);
 }
@@ -590,6 +624,7 @@ function llmsTxt() {
   TIERS.forEach(([gb]) => lines.push(`- [Best local AI models for ${aGb(gb)} GPU](${SITE}/${clean(bestFile(gb))})`));
   UTIERS.forEach(([gb]) => lines.push(`- [Best local AI models for a ${gb} GB Mac or unified-memory PC](${SITE}/${clean(uBestFile(gb))})`));
   lines.push(`- [Best local AI models with no GPU (CPU only, 16-64 GB RAM)](${SITE}/${clean(cpuFile)})`);
+  lines.push(`- [Best local coding models by VRAM (8-96 GB GPUs, Macs)](${SITE}/${clean(codeModelsFile)})`);
   lines.push("", `## Models ([all models with memory needed](${SITE}/model/))`);
   lines.push(`- [New local AI models, newest first](${SITE}/${clean(newFile)}): ${RL.MODELS.slice(-NEW_N).reverse().slice(0, 5).map(m => m[0]).join(", ")}`);
   RL.MODELS.forEach(m => lines.push(`- [${m[0]}](${SITE}/${clean(modelFile(m))}): ${m[1]}B params${m[1] !== m[2] ? `, ${m[2]}B active` : ""}; Q4_K_M needs ~${(m[1] * 4.85 / 8 + m[3] + RL.OVERHEAD).toFixed(1)} GB at 8K context`));
@@ -618,6 +653,7 @@ TIERS.forEach(t => { const f = bestFile(t[0]), html = bestPage(t); write("dist",
 UTIERS.forEach(t => { const f = uBestFile(t[0]), html = uBestPage(t); write("dist", f, html); pages.push(f); });
 write("dist", "best/index.html", bestIndex()); pages.push("best/");
 write("dist", cpuFile, cpuPage()); pages.push(cpuFile);
+write("dist", codeModelsFile, codeModelsPage()); pages.push(codeModelsFile);
 write("dist", "tools/index.html", toolsIndex()); pages.push("tools/");
 TOOLS.forEach(t => { const f = toolFile(t); write("dist", f, toolPage(t)); pages.push(f); });
 VPAGES.forEach(v => { const f = vendorFile(v); write("dist", f, vendorPage(v)); pages.push(f); });
@@ -631,4 +667,4 @@ write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xm
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + no-GPU page + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + no-GPU page + coding-models page + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
