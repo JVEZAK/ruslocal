@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.3
+// RunsLocal static site builder — v5.4
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -139,9 +139,9 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB pages (v1.9) ----------
 // One page per common VRAM size, using a typical card of that size for speed estimates.
-const TIERS = [[8, "RTX 4060"], [10, "RTX 3080 10GB"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v3.8: workstation 72/96 GB tiers; v3.9: 10 GB (RTX 3080 10GB)
+const TIERS = [[8, "RTX 4060"], [10, "RTX 3080 10GB"], [11, "RTX 2080 Ti"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v5.4: 11 GB (RTX 2080 Ti); v3.8: workstation 72/96 GB tiers; v3.9: 10 GB (RTX 3080 10GB)
 const bestFile = gb => `best/${gb}gb-gpu.html`;
-const aGb = gb => (gb === 8 ? "an " : "a ") + gb + " GB";
+const aGb = gb => ([8, 11, 18, 80, 84].includes(gb) ? "an " : "a ") + gb + " GB";
 function bestPage([gb, ref]) {
   const h = RL.flat.find(x => x[0] === ref);
   const rows = RL.rank(h, DEF.ram, DEF.ramBw, DEF.ctx);
@@ -158,7 +158,7 @@ function bestPage([gb, ref]) {
 <h1>Best local AI models for ${aGb(gb)} GPU</h1>
 <p class="answer">${esc(answer)}</p>
 <a class="cta" href="../index.html">Check your exact card and RAM</a>
-<h2 class="sec">Runs fully on a ${gb} GB card</h2>
+<h2 class="sec">Runs fully on ${aGb(gb)} card</h2>
 <div class="tablewrap"><table class="ref"><thead><tr><th>Model</th><th>Best quant</th><th>Memory needed</th><th>Est. speed (${esc(ref)})</th></tr></thead><tbody>
 ${full.map(({ m, r }) => `<tr><td><a href="../${modelFile(m)}">${esc(m[0])}</a><br><span class="meta">${esc(m[4])}</span></td><td class="num">${r.q}</td><td class="num">${r.need.toFixed(1)} GB</td><td class="num">${RL.fmtTps(r.tps)} tok/s</td></tr>`).join("\n")}
 </tbody></table></div>
