@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.4
+// RunsLocal static site builder — v5.5
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -139,7 +139,7 @@ ${footer}</div>`;
 
 // ---------- Best model for N GB pages (v1.9) ----------
 // One page per common VRAM size, using a typical card of that size for speed estimates.
-const TIERS = [[8, "RTX 4060"], [10, "RTX 3080 10GB"], [11, "RTX 2080 Ti"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v5.4: 11 GB (RTX 2080 Ti); v3.8: workstation 72/96 GB tiers; v3.9: 10 GB (RTX 3080 10GB)
+const TIERS = [[6, "RTX 2060"], [8, "RTX 4060"], [10, "RTX 3080 10GB"], [11, "RTX 2080 Ti"], [12, "RTX 4070"], [16, "RTX 4070 Ti Super"], [20, "RX 7900 XT"], [24, "RTX 4090"], [32, "RTX 5090"], [72, "RTX PRO 5000 Blackwell 72GB"], [96, "RTX PRO 6000 Blackwell"]]; // v5.5: 6 GB (RTX 2060); v5.4: 11 GB (RTX 2080 Ti); v3.8: workstation 72/96 GB tiers; v3.9: 10 GB (RTX 3080 10GB)
 const bestFile = gb => `best/${gb}gb-gpu.html`;
 const aGb = gb => ([8, 11, 18, 80, 84].includes(gb) ? "an " : "a ") + gb + " GB";
 function bestPage([gb, ref]) {

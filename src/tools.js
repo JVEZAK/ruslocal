@@ -1,4 +1,4 @@
-// RunsLocal tools directory data — v5.4 · data Nov 18, 2026
+// RunsLocal tools directory data — v5.5 · data Nov 19, 2026
 // Apps for running AI models on your own hardware. Keep facts conservative and verifiable;
 // the CEO agent updates this list. gpu: N=NVIDIA, A=AMD, I=Intel Arc, M=Apple Silicon, C=CPU only.
 // os: W=Windows, M=macOS, L=Linux. via: "backend" means it uses another engine (e.g. Ollama) for the GPU work.
@@ -16,6 +16,9 @@ module.exports = {
     { name: "LM Studio", cat: "apps", url: "https://lmstudio.ai", open: false, os: "WML", gpu: "NAIMC", level: "Beginner",
       best: "A polished desktop app for browsing, downloading and chatting with models",
       note: "Free to use but not open source. Shows which model files fit your hardware and can serve a local API." },
+    { name: "LM Studio Bionic", cat: "apps", url: "https://lmstudio.ai/blog/introducing-lm-studio-bionic", open: false, os: "WM", gpu: "NAIMC", level: "Beginner",
+      best: "A desktop AI agent for work and code that runs open models locally",
+      note: "From the makers of LM Studio (July 2026). Local models run on the LM Studio runtime; code projects with inline diffs, offline voice input. Optional paid cloud models." },
     { name: "Jan", cat: "apps", url: "https://jan.ai", open: true, os: "WML", gpu: "NAIMC", level: "Beginner",
       best: "An open-source, offline ChatGPT-style desktop app",
       note: "Runs models locally and can also connect to cloud APIs. Built on llama.cpp." },
