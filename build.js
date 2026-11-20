@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.5
+// RunsLocal static site builder — v5.6
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -367,7 +367,7 @@ function toolsIndex() {
   const body = `<div class="wrap">${topbar("../")}
 <h1>Local AI tools</h1>
 <p class="lede">Free apps for running AI models on your own computer, sorted by what they do and which GPUs they support. Not sure your hardware can handle a model? <a href="../index.html">Check your GPU first</a>.</p>
-<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a><a href="open-source.html">Open-source tools</a><a href="for-beginners.html">Easiest apps for beginners</a></p>
+<p class="links">${VPAGES.map(v => `<a href="for-${v[1]}.html">Best apps for ${esc(v[2])}</a>`).join("")}${OPAGES.map(o => `<a href="for-${o[1]}.html">Best apps for ${esc(o[2])}</a>`).join("")}<a href="for-coding.html">Best coding agents</a><a href="open-source.html">Open-source tools</a><a href="for-beginners.html">Easiest apps for beginners</a>${COMPARE.map(c => `<a href="${clean(cmpFile(c)).replace("tools/", "")}.html">${esc(c[0])} vs ${esc(c[1])}</a>`).join("")}</p>
 <div class="summary" id="vf"><button class="chip" data-v="all" data-on="1">All GPUs</button>${VENDORS.map(([k, n]) => `<button class="chip" data-v="${k}" data-on="0">${n}</button>`).join("")}</div>
 ${CATEGORIES.map(([id, name, blurb]) => `<h2 class="sec">${esc(name)}</h2><p class="meta">${esc(blurb)}</p>${toolsTable(TOOLS.filter(t => t.cat === id), "../")}`).join("\n")}
 <div class="sponsor"><span>Make a local-AI tool? Featured listings are opening soon.</span><span>Featured spot</span></div>
@@ -397,9 +397,49 @@ function toolPage(t) {
 <h2 class="sec">Which models can you run with ${esc(t.name)}?</h2>
 <p class="meta">That depends on your graphics card's memory, not the app. ${hw.length ? "Pick your hardware:" : `<a href="../index.html">Check your GPU</a> to see which models fit.`}</p>
 ${hw.length ? `<p class="links">${hw.map(h => `<a href="../${gpuFile(h)}">${esc(h[0])}</a>`).join("")}</p>` : ""}
+${cmpFor(t).length ? `<h2 class="sec">Compare</h2><p class="links">${cmpFor(t).map(c => `<a href="${clean(cmpFile(c)).replace("tools/", "")}.html">${esc(c[0])} vs ${esc(c[1])}</a>`).join("")}</p>` : ""}
 ${same.length ? `<h2 class="sec">Similar tools</h2><p class="links">${same.map(x => `<a href="${RL.slug(x.name)}.html">${esc(x.name)}</a>`).join("")}${t.cat === "coding" ? `<a href="for-coding.html">Best local coding agents</a>` : ""}</p>` : ""}
 ${footer}</div>`;
   return fullDoc(head({ title: `${t.name}: local AI ${({ apps: "app", engines: "engine", ui: "interface", coding: "coding tool" })[t.cat]}, GPU support and requirements | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`What is ${t.name} and which GPUs does it support?`, answer]]) }), body);
+}
+
+// ---------- Tool comparison pages (v5.6) ----------
+// "X vs Y" is a common search; each page opens with a direct, quotable verdict, then a side-by-side table generated from TOOLS.
+const COMPARE = [
+  ["Ollama", "LM Studio", "Pick LM Studio if you want a desktop app with a model browser and a chat window and no command line. Pick Ollama if you want a lightweight engine you run with one command and a local API that chat apps and coding agents connect to. Both run the same kinds of quantized models, so speed on the same GPU is similar."],
+  ["Ollama", "llama.cpp", "Ollama is the easier choice: one command downloads and runs a model, and it manages models for you. llama.cpp is the lower-level engine in the same GGUF family; it gives finer control over quantization, context and server flags and usually supports brand-new models first, but takes more setup."],
+  ["LM Studio", "Jan", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose Jan if you want an open-source app; choose LM Studio if you want its polished model browser and hardware-fit hints (it is free but closed source)."]
+];
+const cmpFile = ([a, b]) => `tools/${RL.slug(a)}-vs-${RL.slug(b)}.html`;
+const tByName = n => TOOLS.find(t => t.name === n);
+const cmpFor = t => COMPARE.filter(c => c[0] === t.name || c[1] === t.name);
+function comparePage(c) {
+  const [a, b] = [tByName(c[0]), tByName(c[1])];
+  const url = `${SITE}/${clean(cmpFile(c))}`;
+  const lic = t => t.open ? "free and open source" : "free but not open source";
+  const answer = `${a.name} vs ${b.name}: ${a.name} is ${lic(a)} and ${b.name} is ${lic(b)}. ${c[2]}`;
+  const row = (label, f) => `<tr><th>${label}</th><td>${esc(f(a))}</td><td>${esc(f(b))}</td></tr>`;
+  const ref = gpus.find(h => h[0] === "RTX 4070");
+  const fit = ref && RL.rank(ref, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu" && x.r.tps >= 10).sort((x, y) => y.m[2] - x.m[2] || y.m[1] - x.m[1])[0];
+  const body = `<div class="wrap">${topbar("../")}
+<p class="crumb"><a href="index.html">Local AI tools</a> / ${esc(a.name)} vs ${esc(b.name)}</p>
+<h1>${esc(a.name)} vs ${esc(b.name)}: which should you use?</h1>
+<p class="answer">${esc(answer)}</p>
+<a class="cta" href="../index.html">Check which models your GPU can run</a>
+<div class="tablewrap"><table class="ref"><thead><tr><th></th><th><a href="${RL.slug(a.name)}.html">${esc(a.name)}</a></th><th><a href="${RL.slug(b.name)}.html">${esc(b.name)}</a></th></tr></thead><tbody>
+${row("Type", t => CATEGORIES.find(x => x[0] === t.cat)[1])}
+${row("Best for", t => t.best)}
+${row("Open source", t => t.open ? "Yes" : "No (free to use)")}
+${row("Operating systems", osText)}
+${row("GPU support", gpuText)}
+${row("Skill level", t => t.level)}
+${row("Notes", t => t.note)}
+</tbody></table></div>
+<h2 class="sec">Does the app change which models you can run?</h2>
+<p class="meta">Not much. What fits is set by your GPU's memory${fit ? `: for example, on a 12 GB RTX 4070 the largest model that runs fully on the GPU at 10+ tokens/s is ${esc(fit.m[0])} (${fit.r.q}, ${fit.r.need.toFixed(1)} GB), in either tool` : ""}. <a href="../gpu/index.html">Pick your GPU</a> to see your list.</p>
+<h2 class="sec">More comparisons</h2><p class="links">${COMPARE.filter(x => x !== c).map(x => `<a href="${clean(cmpFile(x)).replace("tools/", "")}.html">${esc(x[0])} vs ${esc(x[1])}</a>`).join("")}<a href="for-beginners.html">Easiest apps for beginners</a><a href="index.html">All local AI tools</a></p>
+${footer}</div>`;
+  return fullDoc(head({ title: `${a.name} vs ${b.name}: which local AI tool should you use? | ${BRAND}`, desc: answer.slice(0, 300), url, ld: faq([[`Should I use ${a.name} or ${b.name}?`, answer]]) }), body);
 }
 
 // ---------- Best local AI apps by GPU brand (v2.0) ----------
@@ -670,6 +710,7 @@ function llmsTxt() {
   lines.push(`- [Best local AI coding agents](${SITE}/${clean(codingFile)})`);
   lines.push(`- [Best open-source local AI apps](${SITE}/${clean(osrcFile)})`);
   lines.push(`- [Easiest local AI apps for beginners](${SITE}/${clean(beginFile)})`);
+  COMPARE.forEach(c => lines.push(`- [${c[0]} vs ${c[1]}](${SITE}/${clean(cmpFile(c))}): ${c[2].split(". ")[0]}.`));
   TOOLS.forEach(t => lines.push(`- [${t.name}](${SITE}/${clean(toolFile(t))}): ${t.best}. ${t.open ? "Open source" : "Free, closed source"}; ${osText(t)}; GPUs: ${gpuText(t)}.`));
   return lines.join("\n") + "\n";
 }
@@ -698,10 +739,11 @@ OPAGES.forEach(o => { const f = osFile(o); write("dist", f, osPage(o)); pages.pu
 write("dist", codingFile, codingPage()); pages.push(codingFile);
 write("dist", osrcFile, openSourcePage()); pages.push(osrcFile);
 write("dist", beginFile, beginnersPage()); pages.push(beginFile);
+COMPARE.forEach(c => { const f = cmpFile(c); write("dist", f, comparePage(c)); pages.push(f); });
 const today = new Date().toISOString().slice(0, 10);
 write("dist", "sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${SITE}/</loc><lastmod>${today}</lastmod></url>\n${pages.map(f => `<url><loc>${SITE}/${clean(f)}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
 // Copy files in static/ (e.g. Google Search Console verification) to the site root as-is.
 if (fs.existsSync("static")) for (const f of fs.readdirSync("static")) fs.copyFileSync(path.join("static", f), path.join("dist", f));
 write("dist", "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write("dist", "llms.txt", llmsTxt());
-console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + no-GPU page + coding-models page + vision-models page + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length} tools pages for ${SITE}`);
+console.log(`Built ${RL.VERSION}: 1 home + ${gpus.length} GPU pages + ${RL.MODELS.length} model pages + models index + GPUs index + ${TIERS.length + UTIERS.length} best-by-VRAM pages + best index + no-GPU page + coding-models page + vision-models page + ${TOOLS.length + 3 + VPAGES.length + OPAGES.length + COMPARE.length} tools pages for ${SITE}`);
