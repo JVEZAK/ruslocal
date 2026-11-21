@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v5.6 · data Nov 20, 2026
+// v5.7 · data Nov 21, 2026
 (function (root) {
-  const VERSION = "v5.6";
-  const DATA_DATE = "Nov 20, 2026";
+  const VERSION = "v5.7";
+  const DATA_DATE = "Nov 21, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -16,7 +16,7 @@
       ["RTX 3080 10GB", 10, 760, "d"], ["RTX 3070", 8, 448, "d"], ["RTX 3060 Ti", 8, 448, "d"], ["RTX 3060 12GB", 12, 360, "d"],
       ["RTX 2080 Ti", 11, 616, "d"], ["RTX 2060", 6, 336, "d"], ["RTX 3050 6GB", 6, 168, "d"], ["RTX PRO 6000 Blackwell", 96, 1792, "d"], ["RTX PRO 5000 Blackwell 72GB", 72, 1344, "d"], ["RTX PRO 5500 Blackwell", 84, 1398, "d"], ["DGX Spark 128GB", 128, 273, "u"], ["DGX Spark 64GB", 64, 273, "u"], ["RTX Spark 128GB", 128, 301, "u"]]],
     ["AMD", [
-      ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
+      ["Radeon AI PRO R9700 32GB", 32, 640, "d"], ["RX 9070 XT", 16, 640, "d"], ["RX 9070", 16, 640, "d"], ["RX 9070 GRE", 12, 432, "d"], ["RX 9060 XT 16GB", 16, 320, "d"], ["RX 7900 XTX", 24, 960, "d"],
       ["RX 7900 XT", 20, 800, "d"], ["RX 7800 XT", 16, 624, "d"], ["RX 7700 16GB", 16, 624, "d"], ["RX 7700 XT", 12, 432, "d"], ["RX 7600", 8, 288, "d"], ["RX 6800 XT", 16, 512, "d"],
       ["Ryzen AI Max+ 395 128GB", 128, 256, "u"], ["Ryzen AI Max+ 395 64GB", 64, 256, "u"]]],
     ["Intel", [["Arc Pro B70 32GB", 32, 608, "d"], ["Arc B580", 12, 456, "d"], ["Arc A770 16GB", 16, 560, "d"]]],
@@ -86,6 +86,7 @@
     ["Nex-N2.6 321B-A18B", 321, 18, 1.5, "MoE · agentic · vision", "Nex AGI, open weights on Hugging Face ~Nov 14, 2026; post-trained on GLM-5.3-Flash (320B total, 18B active), Apache 2.0, image input, 262K context; official repo ships FP8 weights (~328 GB)"],
     ["Tencent Hy4 Flash 220B-A12B", 220, 12, 0.2, "MoE · vision", "Tencent, open weights on Hugging Face Nov 17, 2026 (instruct, FP8 and base); ~220B total incl. 63.5B Engram n-gram tables (Tencent quotes 224B), ~12B active, image input, 1M context, hybrid attention with a small KV cache, Tencent Hy License (Apache 2.0-based with extra terms for very large services); fits a 256 GB Mac at Q4"],
     ["Sage S2.1 Flash 320B-A18B", 320, 18, 1.5, "MoE · science · vision", "InternLM / Shanghai AI Lab, open weights on Hugging Face Nov 15, 2026 (BF16, ~645 GB); 320B total, ~18B active, GLM-5.3-Flash architecture, MIT license, image input, 1M context; scientific reasoning model, reference serving is vLLM/SGLang"],
+    ["Inkling 2 Mini 26B-A3B", 26.4, 5.4, 0.5, "MoE · vision", "Thinking Machines Lab, open weights on Hugging Face Nov 20, 2026; 26.4B total, 3.4B unique active (5.4B with looped middle layers), image input, Apache 2.0; native NVFP4 build is ~20 GB; runs in Ollama, mainline llama.cpp support still pending"],
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
