@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.7
+// RunsLocal static site builder — v5.8
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -409,7 +409,8 @@ const COMPARE = [
   ["Ollama", "LM Studio", "Pick LM Studio if you want a desktop app with a model browser and a chat window and no command line. Pick Ollama if you want a lightweight engine you run with one command and a local API that chat apps and coding agents connect to. Both run the same kinds of quantized models, so speed on the same GPU is similar."],
   ["Ollama", "llama.cpp", "Ollama is the easier choice: one command downloads and runs a model, and it manages models for you. llama.cpp is the lower-level engine in the same GGUF family; it gives finer control over quantization, context and server flags and usually supports brand-new models first, but takes more setup."],
   ["LM Studio", "Jan", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose Jan if you want an open-source app; choose LM Studio if you want its polished model browser and hardware-fit hints (it is free but closed source)."],
-  ["LM Studio", "GPT4All", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose GPT4All if you want an open-source app with a built-in way to chat with your own documents; choose LM Studio if you want its larger model browser, hardware-fit hints and Intel Arc support, and don't mind closed source."]
+  ["LM Studio", "GPT4All", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose GPT4All if you want an open-source app with a built-in way to chat with your own documents; choose LM Studio if you want its larger model browser, hardware-fit hints and Intel Arc support, and don't mind closed source."],
+  ["Ollama", "vLLM", "Pick Ollama for one person on a desktop or laptop: it installs on Windows, macOS and Linux, runs quantized GGUF models with one command and can spill to system RAM when VRAM runs short. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the model has to fit in GPU memory and setup takes more work."]
 ];
 const cmpFile = ([a, b]) => `tools/${RL.slug(a)}-vs-${RL.slug(b)}.html`;
 const tByName = n => TOOLS.find(t => t.name === n);
