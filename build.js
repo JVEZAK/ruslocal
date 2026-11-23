@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v5.8
+// RunsLocal static site builder — v5.9
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -410,7 +410,8 @@ const COMPARE = [
   ["Ollama", "llama.cpp", "Ollama is the easier choice: one command downloads and runs a model, and it manages models for you. llama.cpp is the lower-level engine in the same GGUF family; it gives finer control over quantization, context and server flags and usually supports brand-new models first, but takes more setup."],
   ["LM Studio", "Jan", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose Jan if you want an open-source app; choose LM Studio if you want its polished model browser and hardware-fit hints (it is free but closed source)."],
   ["LM Studio", "GPT4All", "Both are beginner-friendly desktop chat apps for Windows, macOS and Linux. Choose GPT4All if you want an open-source app with a built-in way to chat with your own documents; choose LM Studio if you want its larger model browser, hardware-fit hints and Intel Arc support, and don't mind closed source."],
-  ["Ollama", "vLLM", "Pick Ollama for one person on a desktop or laptop: it installs on Windows, macOS and Linux, runs quantized GGUF models with one command and can spill to system RAM when VRAM runs short. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the model has to fit in GPU memory and setup takes more work."]
+  ["Ollama", "vLLM", "Pick Ollama for one person on a desktop or laptop: it installs on Windows, macOS and Linux, runs quantized GGUF models with one command and can spill to system RAM when VRAM runs short. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the model has to fit in GPU memory and setup takes more work."],
+  ["llama.cpp", "vLLM", "Pick llama.cpp to run a model on your own PC or Mac: it builds on Windows, macOS and Linux, runs quantized GGUF files on NVIDIA, AMD, Intel Arc, Apple Silicon or CPU, and can split a model between VRAM and system RAM. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the whole model has to fit in GPU memory."]
 ];
 const cmpFile = ([a, b]) => `tools/${RL.slug(a)}-vs-${RL.slug(b)}.html`;
 const tByName = n => TOOLS.find(t => t.name === n);
@@ -419,7 +420,7 @@ function comparePage(c) {
   const [a, b] = [tByName(c[0]), tByName(c[1])];
   const url = `${SITE}/${clean(cmpFile(c))}`;
   const lic = t => t.open ? "free and open source" : "free but not open source";
-  const answer = `${a.name} vs ${b.name}: ${a.name} is ${lic(a)} and ${b.name} is ${lic(b)}. ${c[2]}`;
+  const answer = `${a.name} vs ${b.name}: ${a.open === b.open ? `both are ${lic(a)}` : `${a.name} is ${lic(a)} and ${b.name} is ${lic(b)}`}. ${c[2]}`;
   const row = (label, f) => `<tr><th>${label}</th><td>${esc(f(a))}</td><td>${esc(f(b))}</td></tr>`;
   const ref = gpus.find(h => h[0] === "RTX 4070");
   const fit = ref && RL.rank(ref, DEF.ram, DEF.ramBw, DEF.ctx).filter(x => x.r.tier === "gpu" && x.r.tps >= 10).sort((x, y) => y.m[2] - x.m[2] || y.m[1] - x.m[1])[0];
