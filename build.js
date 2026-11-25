@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v6.0
+// RunsLocal static site builder — v6.1
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -413,6 +413,7 @@ const COMPARE = [
   ["Ollama", "vLLM", "Pick Ollama for one person on a desktop or laptop: it installs on Windows, macOS and Linux, runs quantized GGUF models with one command and can spill to system RAM when VRAM runs short. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the model has to fit in GPU memory and setup takes more work."],
   ["llama.cpp", "vLLM", "Pick llama.cpp to run a model on your own PC or Mac: it builds on Windows, macOS and Linux, runs quantized GGUF files on NVIDIA, AMD, Intel Arc, Apple Silicon or CPU, and can split a model between VRAM and system RAM. Pick vLLM to serve many users or agents at once from a Linux server with NVIDIA or AMD GPUs: it batches requests for much higher total throughput, but the whole model has to fit in GPU memory."],
   ["Ollama", "Jan", "Pick Jan if you want a ChatGPT-style desktop app with a chat window and no command line; it also supports Intel Arc GPUs. Pick Ollama if you mainly want a lightweight engine with one-command model downloads and a local API that chat apps and coding agents connect to. Both run quantized GGUF models on Windows, macOS and Linux with NVIDIA, AMD, Apple Silicon or CPU."], // v6.0
+  ["LM Studio", "llama.cpp", "Pick LM Studio if you want a free desktop app with a model browser, a chat window and hardware-fit hints, and no command line; it runs llama.cpp under the hood (plus MLX on Apple Silicon). Pick llama.cpp if you want the open-source engine itself: full control over quantization, context and server flags, the earliest support for new models, and a scriptable local server. Speed on the same GPU is similar because the engine is the same."], // v6.1
 ];
 const cmpFile = ([a, b]) => `tools/${RL.slug(a)}-vs-${RL.slug(b)}.html`;
 const tByName = n => TOOLS.find(t => t.name === n);

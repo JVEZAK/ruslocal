@@ -1,4 +1,4 @@
-// RunsLocal tools directory data — v6.0 · data Nov 24, 2026
+// RunsLocal tools directory data — v6.1 · data Nov 25, 2026
 // Apps for running AI models on your own hardware. Keep facts conservative and verifiable;
 // the CEO agent updates this list. gpu: N=NVIDIA, A=AMD, I=Intel Arc, M=Apple Silicon, C=CPU only.
 // os: W=Windows, M=macOS, L=Linux. via: "backend" means it uses another engine (e.g. Ollama) for the GPU work.
@@ -30,7 +30,7 @@ module.exports = {
       note: "Desktop app with document chat and agents. Can use its built-in engine or connect to Ollama and LM Studio." },
     { name: "llama.cpp", cat: "engines", url: "https://github.com/ggml-org/llama.cpp", open: true, os: "WML", gpu: "NAIMC", level: "Advanced",
       best: "Maximum control and the widest hardware support; the engine behind many other tools",
-      note: "Runs GGUF model files on almost any hardware, with GPU offload and a built-in server." },
+      note: "Runs GGUF model files on almost any hardware, with GPU offload and a built-in server. Reached v1.0.0 in November 2026 (stable API with semantic versioning, FP8 KV cache)." },
     { name: "vLLM", cat: "engines", url: "https://docs.vllm.ai", open: true, os: "L", gpu: "NA", level: "Advanced",
       best: "Fast serving for many users at once on Linux GPU servers",
       note: "Built for throughput rather than one person chatting. Linux with NVIDIA or AMD GPUs." },
