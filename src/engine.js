@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v6.1 · data Nov 25, 2026
+// v6.2 · data Nov 26, 2026
 (function (root) {
-  const VERSION = "v6.1";
-  const DATA_DATE = "Nov 25, 2026";
+  const VERSION = "v6.2";
+  const DATA_DATE = "Nov 26, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -83,6 +83,7 @@
     ["Inkling 975B-A41B", 975, 41, 1.0, "MoE · vision", "Thinking Machines Lab, Jul 15, 2026; 975B total, 41B active, hybrid local/global attention, 1M context, Apache 2.0; needs a multi-GPU server"],
     ["Inkling 2 Small 594B-A17B", 594, 17, 0.6, "MoE · vision", "Thinking Machines Lab, announced Nov 5, 2026, weights Nov 12, 2026; 594B total, 17B active, image input, Apache 2.0; fits a 512 GB Mac at Q4"],
     ["ERNIE 5.5 Flash Base 280B-A14B", 280, 14, 0.5, "MoE · base", "Baidu, weights Nov 5, 2026; 280B total, ~14B active, hybrid MLA/HCA attention, 1M context, ERNIE 5.5 Flash license; base pretraining checkpoint (not chat-tuned yet)"],
+    ["ERNIE 5.5 Flash Preview 280B-A14B", 280, 14, 0.5, "MoE · coding · agentic", "Baidu, open weights on Hugging Face Nov 23-24, 2026 (default FP8 with MXFP4 experts, plus FP8 and BF16 repos); first post-trained (chat/thinking) checkpoint of ERNIE 5.5 Flash Base: 280B total, ~14B active, 1M context, Apache 2.0; reference serving is vLLM/SGLang, no official GGUF yet; fits a 256 GB Mac at Q4"],
     ["Muse Glimmer 30B", 29.6, 29.6, 0.5, "general · vision", "Meta, Aug 10, 2026; dense, Apache 2.0, image input, alternating local/global attention, 128K context; official Q4_K_M GGUF is ~17 GB"],
     ["Nex-N2.6 321B-A18B", 321, 18, 1.5, "MoE · agentic · vision", "Nex AGI, open weights on Hugging Face ~Nov 14, 2026; post-trained on GLM-5.3-Flash (320B total, 18B active), Apache 2.0, image input, 262K context; official repo ships FP8 weights (~328 GB)"],
     ["Tencent Hy4 Flash 220B-A12B", 220, 12, 0.2, "MoE · vision", "Tencent, open weights on Hugging Face Nov 17, 2026 (instruct, FP8 and base); ~220B total incl. 63.5B Engram n-gram tables (Tencent quotes 224B), ~12B active, image input, 1M context, hybrid attention with a small KV cache, Tencent Hy License (Apache 2.0-based with extra terms for very large services); fits a 256 GB Mac at Q4"],
