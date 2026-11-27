@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v6.2 · data Nov 26, 2026
+// v6.3 · data Nov 27, 2026
 (function (root) {
-  const VERSION = "v6.2";
-  const DATA_DATE = "Nov 26, 2026";
+  const VERSION = "v6.3";
+  const DATA_DATE = "Nov 27, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -89,6 +89,8 @@
     ["Tencent Hy4 Flash 220B-A12B", 220, 12, 0.2, "MoE · vision", "Tencent, open weights on Hugging Face Nov 17, 2026 (instruct, FP8 and base); ~220B total incl. 63.5B Engram n-gram tables (Tencent quotes 224B), ~12B active, image input, 1M context, hybrid attention with a small KV cache, Tencent Hy License (Apache 2.0-based with extra terms for very large services); fits a 256 GB Mac at Q4"],
     ["Sage S2.1 Flash 320B-A18B", 320, 18, 1.5, "MoE · science · vision", "InternLM / Shanghai AI Lab, open weights on Hugging Face Nov 15, 2026 (BF16, ~645 GB); 320B total, ~18B active, GLM-5.3-Flash architecture, MIT license, image input, 1M context; scientific reasoning model, reference serving is vLLM/SGLang"],
     ["Inkling 2 Mini 26B-A3B", 26.4, 5.4, 0.5, "MoE · vision", "Thinking Machines Lab, open weights on Hugging Face Nov 20, 2026; 26.4B total, 3.4B unique active (5.4B with looped middle layers), image input, Apache 2.0; native NVFP4 build is ~20 GB; runs in Ollama, mainline llama.cpp support still pending"],
+    ["Kolibri-1.1 75B-A3.4B", 75.1, 3.44, 0.3, "MoE · reasoning", "Aleph Alpha, released Nov 23, 2026 on Hugging Face; 75.1B total, 3.44B active, German and English, text only, Apache 2.0, 262K context; official GGUF for llama.cpp, vLLM via Aleph Alpha plugin"],
+    ["Raon-1 mini 29B-A4B", 28.8, 4.3, 0.2, "MoE · Korean", "KRAFTON, open weights on Hugging Face Nov 2026; 28.8B total, 4.3B active, hybrid linear attention + MLA, Korean and English, text only, Apache 2.0, 262K context; official GGUF needs KRAFTON's llama.cpp fork for now, MLX build available"],
   ];
 
   const QUANTS = [["Q8_0", 8.5], ["Q6_K", 6.56], ["Q5_K_M", 5.69], ["Q4_K_M", 4.85], ["Q3_K_M", 3.91], ["IQ2_M", 2.7]];
