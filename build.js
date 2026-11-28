@@ -1,4 +1,4 @@
-// RunsLocal static site builder — v6.3
+// RunsLocal static site builder — v6.4
 // Usage: node build.js            → writes dist/ (deploy to Vercel) and artifact/ (preview)
 // Change SITE when the domain is final; everything (canonicals, sitemap, llms.txt) follows it.
 const fs = require("fs");
@@ -416,6 +416,7 @@ const COMPARE = [
   ["LM Studio", "llama.cpp", "Pick LM Studio if you want a free desktop app with a model browser, a chat window and hardware-fit hints, and no command line; it runs llama.cpp under the hood (plus MLX on Apple Silicon). Pick llama.cpp if you want the open-source engine itself: full control over quantization, context and server flags, the earliest support for new models, and a scriptable local server. Speed on the same GPU is similar because the engine is the same."], // v6.1
   ["Jan", "GPT4All", "Both are free, open-source desktop chat apps for Windows, macOS and Linux that run models offline. Pick GPT4All if your main goal is chatting with your own documents: it has a built-in way to search local files. Pick Jan if you want a ChatGPT-style app that can also connect to cloud APIs and supports Intel Arc GPUs. Both run GGUF models, so speed on the same GPU is similar."], // v6.2
   ["Ollama", "GPT4All", "Pick GPT4All if you want a ChatGPT-style desktop app with no command line and a built-in way to chat with your own documents. Pick Ollama if you want a lightweight engine with one-command model downloads and a local API that chat apps and coding agents connect to. Both are free and open source, run quantized GGUF models on Windows, macOS and Linux with NVIDIA, AMD, Apple Silicon or CPU, so speed on the same GPU is similar."], // v6.3
+  ["Continue", "Cline", "Pick Continue if you want tab autocomplete and chat inside VS Code or JetBrains; a small, fast local model is enough for completions. Pick Cline if you want an autonomous coding agent in VS Code that plans multi-step tasks, edits files and runs terminal commands with your approval; agent work needs a capable local model, ideally 24B+, with a long context window. Both connect to Ollama and LM Studio."], // v6.4
 ];
 const cmpFile = ([a, b]) => `tools/${RL.slug(a)}-vs-${RL.slug(b)}.html`;
 const tByName = n => TOOLS.find(t => t.name === n);

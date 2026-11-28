@@ -1,8 +1,8 @@
 // RunsLocal engine — shared by the live tool (browser) and the static page builder (Node).
-// v6.3 · data Nov 27, 2026
+// v6.4 · data Nov 28, 2026
 (function (root) {
-  const VERSION = "v6.3";
-  const DATA_DATE = "Nov 27, 2026";
+  const VERSION = "v6.4";
+  const DATA_DATE = "Nov 28, 2026";
 
   // Hardware: name, memory GB, bandwidth GB/s, kind (d = discrete GPU, u = unified memory, c = CPU only)
   const HW = [
@@ -42,6 +42,7 @@
     ["Qwen3.6 27B", 27, 27, 0.6, "coding", "Dense, strong at code"],
     ["Qwen3.5 9B", 9.7, 9.7, 0.5, "general", "Good 8 GB pick"],
     ["Qwen3.5 122B-A10B", 122, 10, 0.8, "MoE", "Workstation / big Mac class"],
+    ["Sarvam-105B", 106, 10.3, 0.3, "MoE · multilingual", "Sarvam AI (India), Mar 2026; open weights on Hugging Face, Apache 2.0; ~106B total, 10.3B active (128 experts, top-8, one shared), MLA attention, text only, 23 languages incl. 22 Indian languages, 128K context; community GGUF quants; was missing"],
     ["Qwen3.8-Flash-Next", 176, 6, 0.6, "MoE", "125B + n-gram table, 6B active"],
     ["Nemotron 3.5 Lightning 30B-A3B", 30, 3, 0.3, "MoE · agentic", "NVIDIA hybrid Mamba, ~3B active, 1M context"],
     ["gpt-oss-20b", 21, 3.6, 0.4, "MoE · reasoning", "OpenAI open-weight, Apache 2.0"],
